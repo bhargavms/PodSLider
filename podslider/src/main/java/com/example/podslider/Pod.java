@@ -1,22 +1,24 @@
 package com.example.podslider;
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.view.View;
 
-public class Pod extends View {
-    private int podRadius = 0;
+public class Pod {
+    private float podRadius = 0;
     private int podColor = 0;
     private float cx = 0;
     private float cy = 0;
 
     private Paint podCirclePaint;
 
-    public Pod(Context context, int radius, int color) {
-        super(context);
+    public Pod(float radius, int color) {
         this.podRadius = radius;
+        this.podColor = color;
+        init();
+    }
+
+    public Pod(int color) {
         this.podColor = color;
         init();
     }
@@ -26,6 +28,10 @@ public class Pod extends View {
         this.cy = cy;
     }
 
+    public void setPodRadius(float radius) {
+        this.podRadius = radius;
+    }
+
     private void init() {
         podCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         podCirclePaint.setColor(podColor);
@@ -33,9 +39,7 @@ public class Pod extends View {
         podCirclePaint.setStyle(Paint.Style.FILL_AND_STROKE);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+    public void draw(Canvas canvas) {
         canvas.drawCircle(cx, cy, podRadius, podCirclePaint);
     }
 }

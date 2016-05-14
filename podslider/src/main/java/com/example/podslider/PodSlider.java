@@ -15,8 +15,7 @@ import android.view.View;
 public class PodSlider extends View {
     private int numberOfPods;
     private Paint mainPaint;
-    private Paint podPaint;
-    private float podCircleRadius;
+    private Pod[] pods;
 
     public PodSlider(Context context) {
         super(context);
@@ -50,21 +49,27 @@ public class PodSlider extends View {
         }
     }
 
+    @Override
+    public void setBackgroundColor(int color) {
+        this.mainPaint.setColor(color);
+        invalidate();
+    }
+
     public void setNumberOfPods(int numberOfPods) {
         this.numberOfPods = numberOfPods;
     }
 
     private void init(int numberOfPods, int podColor, int mainSliderColor) {
         this.numberOfPods = numberOfPods;
+        pods = new Pod[numberOfPods];
         mainPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mainPaint.setColor(mainSliderColor);
         mainPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
         mainPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        podPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        podPaint.setColor(podColor);
-        podPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
-        podPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        for (int i = 0; i < numberOfPods; i++) {
+            pods[i] = new Pod(podColor);
+        }
     }
 
     @Override
@@ -76,12 +81,15 @@ public class PodSlider extends View {
         float height = getHeight();
 
         drawRoundedRect(canvas, left, top, width, height);
-        podCircleRadius = height / 6;
+
         if (numberOfPods == 1) {
             // draw one at the center and be done.
             float centerX = width / 2;
             float centerY = height / 2;
-            canvas.drawCircle(centerX, centerY, podCircleRadius, podPaint);
+            Pod pod = pods[0];
+            pod.setCenter(centerX, centerY);
+            pod.setPodRadius(height/6);
+            pod.draw(canvas);
             return;
         }
         // else you start calculation.
@@ -90,8 +98,11 @@ public class PodSlider extends View {
 
         float gapBetweenPodCenters = calculateGapBetweenPodCenters();
         for (int i = 0, n = numberOfPods; i < n; i++) {
-            float cx = startX + i * gapBetweenPodCenters;
-            canvas.drawCircle(cx, podCenterY, podCircleRadius, podPaint);
+            float podCenterX = startX + i * gapBetweenPodCenters;
+            Pod pod = pods[i];
+            pod.setPodRadius(height/6);
+            pod.setCenter(podCenterX, podCenterY);
+            pod.draw(canvas);
         }
     }
 
