@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PodSlider">
+        <attr name="mainSliderColor" format="color"/>
+        <attr name="numberOfPods" format="integer"/>
+        <attr name="podColor" format="color"/>
+    </declare-styleable>
+</resources>
