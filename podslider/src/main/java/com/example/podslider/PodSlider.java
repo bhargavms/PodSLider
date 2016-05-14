@@ -86,10 +86,11 @@ public class PodSlider extends View {
         }
         // else you start calculation.
         float podCenterY = height / 2;
+        float startX = height / 2;
 
         float gapBetweenPodCenters = calculateGapBetweenPodCenters();
-        for (int i = 1, n = numberOfPods; i <= n; i++) {
-            float cx = i * gapBetweenPodCenters;
+        for (int i = 0, n = numberOfPods; i < n; i++) {
+            float cx = startX + i * gapBetweenPodCenters;
             canvas.drawCircle(cx, podCenterY, podCircleRadius, podPaint);
         }
     }
@@ -102,11 +103,10 @@ public class PodSlider extends View {
         // Which is nothing but (getWidth() - getHeight / 2) - getHeight / 2
         // which equal to getWidth() - 2 * getHeight / 2
         // which is equal to getWidth() - getHeight()
-        @SuppressWarnings("UnnecessaryLocalVariable")
         float distanceBetweenTheCentersOfPodsAtTheEnd = getWidth() - getHeight();
         // Now to determine the distance between the center of each pod
         // I divide the distanceBetweenTheCentersOfPodsAtTheEnd by number of Pods
-        return distanceBetweenTheCentersOfPodsAtTheEnd / numberOfPods;
+        return distanceBetweenTheCentersOfPodsAtTheEnd / (numberOfPods - 1);
     }
 
     private void drawRoundedRect(Canvas canvas, float left, float top, float right, float bottom) {
