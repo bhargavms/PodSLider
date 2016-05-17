@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -16,6 +17,8 @@ public class PodSlider extends View {
     private int numberOfPods;
     private Paint mainPaint;
     private Pod[] pods;
+    private float podRadius;
+    private OnPodClickListener mPodClickListener;
 
     public PodSlider(Context context) {
         super(context);
@@ -35,6 +38,10 @@ public class PodSlider extends View {
     public PodSlider(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
+    }
+
+    public void setPodClickListener(OnPodClickListener listener) {
+        this.mPodClickListener = listener;
     }
 
     private void init(Context c, AttributeSet attrs) {
@@ -72,6 +79,55 @@ public class PodSlider extends View {
         }
     }
 
+    private float startX;
+    private float startY;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                startX = event.getX();
+                startY = event.getY();
+                return true;
+            case MotionEvent.ACTION_UP:
+                float endX = event.getX();
+                float endY = event.getY();
+                if (isAClick(startX, endX, startY, endY)) {
+                    onClick(endX, endY);
+                }
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void onClick(float x, float y) {
+        for (int i = 0; i < pods.length; i++) {
+            Pod pod = pods[i];
+            float cx = pod.getCenterX();
+            float cy = pod.getCenterY();
+            if (x > cx - podRadius && x < cx + podRadius && y > cy - podRadius && y < cy + podRadius) {
+                pod.setSelected(true);
+                // TODO: Animate the view.
+                // propagate click.
+                if (mPodClickListener != null)
+                    this.mPodClickListener.onPodClick(pods[i]);
+            } else {
+                pod.setSelected(false);
+            }
+        }
+    }
+
+    private boolean isAClick(float startX, float endX, float startY, float endY) {
+        float differenceX = Math.abs(startX - endX);
+        float differenceY = Math.abs(startY - endY);
+        if (differenceX > 5f || differenceY > 5f) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -88,19 +144,20 @@ public class PodSlider extends View {
             float centerY = height / 2;
             Pod pod = pods[0];
             pod.setCenter(centerX, centerY);
-            pod.setPodRadius(height/6);
+            pod.setPodRadius(height / 6);
             pod.draw(canvas);
             return;
         }
         // else you start calculation.
         float podCenterY = height / 2;
         float startX = height / 2;
+        podRadius = height / 6;
 
         float gapBetweenPodCenters = calculateGapBetweenPodCenters();
         for (int i = 0, n = numberOfPods; i < n; i++) {
             float podCenterX = startX + i * gapBetweenPodCenters;
             Pod pod = pods[i];
-            pod.setPodRadius(height/6);
+            pod.setPodRadius(podRadius);
             pod.setCenter(podCenterX, podCenterY);
             pod.draw(canvas);
         }
@@ -116,7 +173,8 @@ public class PodSlider extends View {
         // which is equal to getWidth() - getHeight()
         float distanceBetweenTheCentersOfPodsAtTheEnd = getWidth() - getHeight();
         // Now to determine the distance between the center of each pod
-        // I divide the distanceBetweenTheCentersOfPodsAtTheEnd by number of Pods
+        // I divide the distanceBetweenTheCentersOfPodsAtTheEnd by number of Pods -1
+        // because distance between one pod starts at the 0th position.
         return distanceBetweenTheCentersOfPodsAtTheEnd / (numberOfPods - 1);
     }
 

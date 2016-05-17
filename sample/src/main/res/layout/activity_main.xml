@@ -9,6 +9,7 @@
     tools:context="com.example.podslidersample.MainActivity">
 
     <com.example.podslider.PodSlider
+        android:id="@+id/pod_slider"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         app:mainSliderColor="@color/mainPodSlider"

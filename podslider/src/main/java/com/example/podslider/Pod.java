@@ -9,6 +9,7 @@ public class Pod {
     private int podColor = 0;
     private float cx = 0;
     private float cy = 0;
+    private boolean selected = false;
 
     private Paint podCirclePaint;
 
@@ -28,8 +29,20 @@ public class Pod {
         this.cy = cy;
     }
 
+    public float getCenterX() {
+        return cx;
+    }
+
+    public float getCenterY() {
+        return cy;
+    }
+
     public void setPodRadius(float radius) {
         this.podRadius = radius;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     private void init() {
