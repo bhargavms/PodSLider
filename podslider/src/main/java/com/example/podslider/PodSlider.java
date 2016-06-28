@@ -6,6 +6,8 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +21,12 @@ public class PodSlider extends View {
     private Pod[] pods;
     private float podRadius;
     private OnPodClickListener mPodClickListener;
+    private int currentlySelectedPod = 0;
+    private Handler mainHandler;
+
+    private float largeAndSmallCircleCenterX;
+
+    private Rect clipBounds;
 
     public PodSlider(Context context) {
         super(context);
@@ -50,7 +58,8 @@ public class PodSlider extends View {
             int mainSliderColor = a.getColor(R.styleable.PodSlider_mainSliderColor, 0);
             int numberOfPods = a.getInt(R.styleable.PodSlider_numberOfPods, 1);
             int podColor = a.getColor(R.styleable.PodSlider_podColor, 0);
-            init(numberOfPods, podColor, mainSliderColor);
+            int selectedPodColor = a.getColor(R.styleable.PodSlider_selectedPodColor, Color.WHITE);
+            init(numberOfPods, podColor, mainSliderColor, selectedPodColor);
         } finally {
             a.recycle();
         }
@@ -66,8 +75,10 @@ public class PodSlider extends View {
         this.numberOfPods = numberOfPods;
     }
 
-    private void init(int numberOfPods, int podColor, int mainSliderColor) {
+    private void init(int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
+        mainHandler = new Handler();
         this.numberOfPods = numberOfPods;
+        clipBounds = new Rect();
         pods = new Pod[numberOfPods];
         mainPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mainPaint.setColor(mainSliderColor);
@@ -75,8 +86,18 @@ public class PodSlider extends View {
         mainPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         for (int i = 0; i < numberOfPods; i++) {
-            pods[i] = new Pod(podColor);
+            pods[i] = new Pod(mainSliderColor, podColor, selectedPodColor, this, i);
         }
+        setCurrentlySelectedPod(0);
+    }
+
+    public void setCurrentlySelectedPod(int currentlySelectedPod) {
+        this.currentlySelectedPod = currentlySelectedPod;
+        for (int i = 0; i < numberOfPods; i++) {
+            pods[i].setSelected(false);
+        }
+        pods[currentlySelectedPod].setSelected(true);
+        update(pods[currentlySelectedPod].getCenterX());
     }
 
     private float startX;
@@ -108,14 +129,62 @@ public class PodSlider extends View {
             float cx = pod.getCenterX();
             float cy = pod.getCenterY();
             if (x > cx - podRadius && x < cx + podRadius && y > cy - podRadius && y < cy + podRadius) {
+//                Pod previouslySelectedPod = pods[currentlySelectedPod];
+                /*currentlySelectedPod = i;
                 pod.setSelected(true);
                 // TODO: Animate the view.
+                pod.animatePod();
+                update(pod.getCenterX());*/
+                setCurrentlySelectedPod(i);
                 // propagate click.
                 if (mPodClickListener != null)
                     this.mPodClickListener.onPodClick(pods[i]);
-            } else {
+                return;
+            }/* else {
                 pod.setSelected(false);
-            }
+            }*/
+        }
+    }
+
+    private void update(final float toX) {
+        // animate the pod
+        pods[currentlySelectedPod].animatePod();
+        // animate the outer circles
+        if (largeAndSmallCircleCenterX == toX) {
+            return;
+        }
+        
+        if (largeAndSmallCircleCenterX > toX) {
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (largeAndSmallCircleCenterX >= toX) {
+                                mainHandler.removeCallbacks(this);
+                            } else {
+                                largeAndSmallCircleCenterX -= 100f;
+                                invalidate();
+                                mainHandler.postDelayed(this, );
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (largeAndSmallCircleCenterX >= toX) {
+                        mainHandler.removeCallbacks(this);
+                    } else {
+                        largeAndSmallCircleCenterX += 100f;
+                        invalidate();
+                        mainHandler.postDelayed(this, 15);
+                    }
+                }
+            });
         }
     }
 
@@ -131,39 +200,84 @@ public class PodSlider extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        float left = 0;
-        float top = 0;
-        float width = getWidth();
-        float height = getHeight();
+        float height = canvas.getHeight();
+        float width = canvas.getWidth();
+        canvas.getClipBounds(clipBounds);
+        // make large circle diameter equal to the height of the height of the canvas.
+        float largeCircleRadius = height / 2;
+//        float mediumCircleRadius = largeCircleRadius / 1.5f;
+        podRadius = height / 6;
+        float rectangleRight = canvas.getWidth() - (largeCircleRadius / 5);
+        float rectangleLeft = getPaddingLeft() + (largeCircleRadius / 5);
+        float rectangleTop = getPaddingTop() + clipBounds.top + (largeCircleRadius / 5);
+        float rectangleBottom = clipBounds.bottom - getPaddingBottom() - (largeCircleRadius / 5);
 
-        drawRoundedRect(canvas, left, top, width, height);
-
+        drawRoundedRect(canvas, rectangleLeft, rectangleTop, rectangleRight, rectangleBottom);
+        float podCenterY = rectangleTop + (rectangleBottom - rectangleTop) / 2;
+        canvas.drawCircle(largeAndSmallCircleCenterX, podCenterY, largeCircleRadius, mainPaint);
         if (numberOfPods == 1) {
             // draw one at the center and be done.
-            float centerX = width / 2;
-            float centerY = height / 2;
+            float centerX = rectangleRight / 2;
             Pod pod = pods[0];
-            pod.setCenter(centerX, centerY);
-            pod.setPodRadius(height / 6);
-            pod.draw(canvas);
+            pod.setCenter(centerX, podCenterY);
+            pod.setPodRadius(podRadius);
+            canvas.drawCircle(largeAndSmallCircleCenterX, podCenterY, largeCircleRadius, mainPaint);
+            pod.drawPod(canvas);
             return;
         }
         // else you start calculation.
-        float podCenterY = height / 2;
-        float startX = height / 2;
-        podRadius = height / 6;
-
-        float gapBetweenPodCenters = calculateGapBetweenPodCenters();
+        float startX = rectangleLeft + (rectangleBottom - rectangleTop) / 2;
+        float gapBetweenPodCenters = calculateGapBetweenPodCenters(rectangleLeft, rectangleRight,
+                rectangleTop, rectangleBottom);
         for (int i = 0, n = numberOfPods; i < n; i++) {
             float podCenterX = startX + i * gapBetweenPodCenters;
             Pod pod = pods[i];
-            pod.setPodRadius(podRadius);
+            pod.setPodRadius(this.podRadius);
             pod.setCenter(podCenterX, podCenterY);
-            pod.draw(canvas);
+            pod.drawPod(canvas);
         }
     }
 
-    private float calculateGapBetweenPodCenters() {
+    /*@Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int width;
+        int height;
+
+        //Measure Width
+        if (widthMode == MeasureSpec.EXACTLY) {
+            //Must be this size
+            width = widthSize;
+        } else if (widthMode == MeasureSpec.AT_MOST) {
+            //Can't be bigger than...
+            width = Math.min(desiredWidth, widthSize);
+        } else {
+            //Be whatever you want
+            width = desiredWidth;
+        }
+
+        //Measure Height
+        if (heightMode == MeasureSpec.EXACTLY) {
+            //Must be this size
+            height = heightSize;
+        } else if (heightMode == MeasureSpec.AT_MOST) {
+            //Can't be bigger than...
+            height = Math.min(desiredHeight, heightSize);
+        } else {
+            //Be whatever you want
+            height = desiredHeight;
+        }
+
+
+        //MUST CALL THIS
+        setMeasuredDimension(width, height);
+    }*/
+
+    private float calculateGapBetweenPodCenters(float left, float right, float top, float bottom) {
         // The center of leftmost circle is at getHeight() / 2, getHeight() / 2 (by design)
         // The center of rightmost circle is at getWidth() - getHeight /2, getHeight / 2 (by design)
         // So the distance between these 2 points is the difference is their x-axis co ordinates
@@ -171,17 +285,59 @@ public class PodSlider extends View {
         // Which is nothing but (getWidth() - getHeight / 2) - getHeight / 2
         // which equal to getWidth() - 2 * getHeight / 2
         // which is equal to getWidth() - getHeight()
-        float distanceBetweenTheCentersOfPodsAtTheEnd = getWidth() - getHeight();
+        float distanceBetweenTheCentersOfPodsAtTheEnd = (right - left) - (bottom - top);
         // Now to determine the distance between the center of each pod
         // I divide the distanceBetweenTheCentersOfPodsAtTheEnd by number of Pods -1
         // because distance between one pod starts at the 0th position.
         return distanceBetweenTheCentersOfPodsAtTheEnd / (numberOfPods - 1);
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int width;
+        int height;
+        int numberOfPods = this.numberOfPods;
+        float podRadius = heightSize / 6;
+        int desiredWidth = (int) (podRadius * 2 * numberOfPods);
+
+        //Measure Width
+        if (widthMode == MeasureSpec.EXACTLY) {
+            //Must be this size
+            width = widthSize;
+        } else if (widthMode == MeasureSpec.AT_MOST) {
+            //Can't be bigger than...
+            width = Math.min(desiredWidth, widthSize);
+        } else {
+            //Be whatever you want
+            width = desiredWidth;
+        }
+
+        int desiredHeight = width / 4;
+
+        //Measure Height
+        if (heightMode == MeasureSpec.EXACTLY) {
+            //Must be this size
+            height = heightSize;
+        } else if (heightMode == MeasureSpec.AT_MOST) {
+            //Can't be bigger than...
+            height = Math.min(desiredHeight, heightSize);
+        } else {
+            //Be whatever you want
+            height = desiredHeight;
+        }
+        setMeasuredDimension(width, height);
+    }
+
     private void drawRoundedRect(Canvas canvas, float left, float top, float right, float bottom) {
-        float radius = getHeight() / 2;
-        canvas.drawCircle(radius, radius, radius, mainPaint);
-        canvas.drawCircle(right - radius, radius, radius, mainPaint);
+        float radius = (bottom - top) / 2;
+        canvas.drawCircle(left + radius, top + radius, radius, mainPaint);
+        canvas.drawCircle(right - radius, top + radius, radius, mainPaint);
         canvas.drawRect(left + radius, top, right - radius, bottom, mainPaint);
     }
 }
