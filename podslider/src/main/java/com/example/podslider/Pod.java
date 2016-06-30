@@ -3,6 +3,7 @@ package com.example.podslider;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.text.TextPaint;
 
@@ -17,7 +18,7 @@ public class Pod {
     private float cy = 0;
     private boolean selected = false;
     private static final float MAX_RADIUS_INCREMENT_FACTOR = 0.3f;
-    private float radiusIncrementFactor = 0;
+    private float radiusIncrementor = 0;
     private Handler handler;
 
     private Paint podCirclePaint;
@@ -86,22 +87,23 @@ public class Pod {
 
         selectedPodTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         selectedPodTextPaint.setColor(mainSliderColor);
-        selectedPodTextPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
+        selectedPodTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
         selectedPodTextPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         selectedPodTextPaint.setTextAlign(Paint.Align.CENTER);
-
     }
 
     public void drawPod(Canvas canvas) {
         if (!selected)
             canvas.drawCircle(cx, cy, podRadius, podCirclePaint);
         else {
-//            canvas.drawCircle(cx, cy, canvas.getHeight() / 2, mainSliderPaint);
-//            canvas.drawCircle(cx, cy, canvas.getHeight() / 2.7f, podCirclePaint);
-            canvas.drawCircle(cx, cy, podRadius + (podRadius * radiusIncrementFactor), selectedPodPaint);
-            if (radiusIncrementFactor == MAX_RADIUS_INCREMENT_FACTOR) {
-                canvas.drawText(centerText, cx, cy, selectedPodTextPaint);
-            }
+            canvas.drawCircle(cx, cy, podRadius + (podRadius * radiusIncrementor), selectedPodPaint);
+            float textSize = (podRadius + MAX_RADIUS_INCREMENT_FACTOR) * 2;
+            selectedPodTextPaint.setTextSize(textSize);
+            canvas.drawText(centerText,
+                    cx,
+                    // http://stackoverflow.com/questions/11120392/android-center-text-on-canvas
+                    cy - ((selectedPodTextPaint.descent() + selectedPodTextPaint.ascent()) / 2),
+                    selectedPodTextPaint);
         }
     }
 
@@ -112,15 +114,17 @@ public class Pod {
     public void animatePod() {
         if (!selected)
             return;
-        radiusIncrementFactor = 0;
+        radiusIncrementor = 0;
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (radiusIncrementFactor >= MAX_RADIUS_INCREMENT_FACTOR) {
+                if (radiusIncrementor >= MAX_RADIUS_INCREMENT_FACTOR) {
                     handler.removeCallbacks(this);
                 } else {
-                    radiusIncrementFactor += MAX_RADIUS_INCREMENT_FACTOR / 50;
-                    handler.postDelayed(this, 15);
+                    float v = (MAX_RADIUS_INCREMENT_FACTOR - radiusIncrementor) /
+                            PodSlider.LARGE_CIRCLE_MOVE_TIME_IN_MS;
+                    radiusIncrementor += v * PodSlider.TIME_FOR_EACH_INCREMENT_IN_MS;
+                    handler.postDelayed(this, PodSlider.TIME_FOR_EACH_INCREMENT_IN_MS);
                     parent.invalidate();
                 }
             }
