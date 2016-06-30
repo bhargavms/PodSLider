@@ -18,11 +18,13 @@ import android.view.View;
 public class PodSlider extends View {
     private int numberOfPods;
     private Paint mainPaint;
+    private Paint podPaint;
     private Pod[] pods;
     private float podRadius;
     private OnPodClickListener mPodClickListener;
     private int currentlySelectedPod = 0;
     private Handler mainHandler;
+    private boolean firstDraw = true;
 
     private float largeAndSmallCircleCurrentCenterX;
     private float loargeAndSmallCircleDestCenterX;
@@ -86,6 +88,11 @@ public class PodSlider extends View {
         mainPaint.setColor(mainSliderColor);
         mainPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
         mainPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        podPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        podPaint.setColor(podColor);
+        podPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
+        podPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         for (int i = 0; i < numberOfPods; i++) {
             pods[i] = new Pod(mainSliderColor, podColor, selectedPodColor, this, i);
@@ -156,7 +163,6 @@ public class PodSlider extends View {
         if (largeAndSmallCircleCurrentCenterX == largeAndSmallCircleDestCenterX) {
             return;
         }
-        final float distance = Math.abs(largeAndSmallCircleCurrentCenterX - largeAndSmallCircleDestCenterX);
         if (largeAndSmallCircleCurrentCenterX > largeAndSmallCircleDestCenterX) {
             // current greater
             mainHandler.post(new Runnable() {
@@ -219,8 +225,8 @@ public class PodSlider extends View {
         canvas.getClipBounds(clipBounds);
         // make large circle diameter equal to the height of the height of the canvas.
         float largeCircleRadius = height / 2;
-//        float mediumCircleRadius = largeCircleRadius / 1.5f;
-        podRadius = height / 6;
+        float mediumCircleRadius = largeCircleRadius / 1.5f;
+        podRadius = height / 7;
         float rectangleRight = canvas.getWidth() - (largeCircleRadius / 5);
         float rectangleLeft = getPaddingLeft() + (largeCircleRadius / 5);
         float rectangleTop = getPaddingTop() + clipBounds.top + (largeCircleRadius / 5);
@@ -228,7 +234,6 @@ public class PodSlider extends View {
 
         drawRoundedRect(canvas, rectangleLeft, rectangleTop, rectangleRight, rectangleBottom);
         float podCenterY = rectangleTop + (rectangleBottom - rectangleTop) / 2;
-        canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
         if (numberOfPods == 1) {
             // draw one at the center and be done.
             float centerX = rectangleRight / 2;
@@ -236,11 +241,18 @@ public class PodSlider extends View {
             pod.setCenter(centerX, podCenterY);
             pod.setPodRadius(podRadius);
             canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
+            canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, mediumCircleRadius, mainPaint);
             pod.drawPod(canvas);
             return;
         }
         // else you start calculation.
         float startX = rectangleLeft + (rectangleBottom - rectangleTop) / 2;
+        if (firstDraw) {
+            firstDraw = false;
+            largeAndSmallCircleCurrentCenterX = startX;
+        }
+        canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
+        canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, mediumCircleRadius, podPaint);
         float gapBetweenPodCenters = calculateGapBetweenPodCenters(rectangleLeft, rectangleRight,
                 rectangleTop, rectangleBottom);
         for (int i = 0, n = numberOfPods; i < n; i++) {

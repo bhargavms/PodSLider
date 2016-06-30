@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         app:mainSliderColor="@color/mainPodSlider"
-        app:numberOfPods="5"
+        app:numberOfPods="8"
         app:podColor="#4CAF50"
         app:selectedPodColor="#fff" />
 </RelativeLayout>
