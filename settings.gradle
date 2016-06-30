@@ -1,1 +1,1 @@
-include ':sample', ':podslider'
+include ':sample', ':library'
