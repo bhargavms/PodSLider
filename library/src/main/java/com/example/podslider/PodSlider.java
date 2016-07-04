@@ -324,7 +324,6 @@ public class PodSlider extends View {
         }
 
         int numberOfPods = this.numberOfPods;
-//        float podRadius = height / 7;
         int desiredWidth = height * numberOfPods;
 
         //Measure Width
