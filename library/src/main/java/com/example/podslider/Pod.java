@@ -107,6 +107,11 @@ public class Pod {
         }
     }
 
+    public boolean doesCoOrdinatesLieInSelectRange(float x, float y) {
+        float range = podRadius * (7 / 3);
+        return x > cx - range && x < cx + range && y > cy - range && y < cy + range;
+    }
+
     public boolean isSelected() {
         return selected;
     }
