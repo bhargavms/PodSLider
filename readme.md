@@ -22,8 +22,47 @@ and to your module's build.gradle dependencies block add the dependency to the l
 
 ```gradle
 dependencies {
-    compile 'com.github.bhargavms:PodSLider:1.1.1'
+    compile 'com.github.bhargavms:PodSLider:1.1.2'
 }
 ```
+
+## Usage
+#### Xml Attributes
+```
+app:mainSliderColor="@color/mainPodSlider" // the color of the main rounded rectangular bar.
+app:numberOfPods="2" // the number of small circles (i.e pods) in the slider.
+app:podColor="#4CAF50" // the color of the pod when its not selected.
+app:selectedPodColor="#fff" // the color of the pod when its selected.
+```
+#### Setting a click listener
+```
+PodSlider podSlider = (PodSlider) findViewById(R.id.pod_slider);
+podSlider.setPodClickListener(new OnPodClickListener() {
+    @Override
+    public void onPodClick(int position) {
+        Log.d("PodPosition", "position = " + position);
+    }
+});
+```
+
+#### To set Currently selected Pod
+```
+podSlider.setCurrentlySelectedPod(1);
+```
+
+#### To set up with a ViewPager
+```
+ViewPager pager = (ViewPager) findViewById(R.id.pager);
+PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
+PodPagerAdapter adapter = new PodPagerAdapter(getSupportFragmentManager());
+pager.setAdapter(adapter);
+pagerSlider.setUpWithViewPager(pager);
+```
+
+#### To change the number of pods programatically
+```
+podSlider.setNumberOfPods(4);
+```
+#### Sample:
 
 ![Sample Gif](assets/gifs/ezgif.com-gif-maker.gif?raw=true)
