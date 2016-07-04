@@ -22,7 +22,7 @@ and to your module's build.gradle dependencies block add the dependency to the l
 
 ```gradle
 dependencies {
-    compile 'com.github.bhargavms:PodSLider:1.1.0'
+    compile 'com.github.bhargavms:PodSLider:1.1.1'
 }
 ```
 
