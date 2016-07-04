@@ -1,5 +1,5 @@
 package com.example.podslider;
 
 public interface OnPodClickListener {
-    void onPodClick(Pod pod);
+    void onPodClick(int position);
 }

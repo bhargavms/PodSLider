@@ -8,9 +8,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.lang.ref.WeakReference;
 
 /**
  * A view that looks like this http://codepen.io/chrisgannon/pen/mPoMxq
@@ -24,6 +28,7 @@ public class PodSlider extends View {
     private int currentlySelectedPod = 0;
     private Handler mainHandler;
     private boolean firstDraw = true;
+    private ViewPager mViewPager;
 
     private float largeAndSmallCircleCurrentCenterX;
     private float largeAndSmallCircleDestCenterX;
@@ -75,13 +80,23 @@ public class PodSlider extends View {
 
     public void setNumberOfPods(int numberOfPods) {
         this.numberOfPods = numberOfPods;
+        pods = new Pod[numberOfPods];
+        for (int i = 0; i < numberOfPods; i++) {
+            pods[i] = new Pod(mainSliderColor, podColor, selectedPodColor, this, i);
+        }
     }
+
+    private int mainSliderColor;
+    private int podColor;
+    private int selectedPodColor;
 
     private void init(int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
         mainHandler = new Handler();
-        this.numberOfPods = numberOfPods;
+        this.mainSliderColor = mainSliderColor;
+        this.podColor = podColor;
+        this.selectedPodColor = selectedPodColor;
         clipBounds = new Rect();
-        pods = new Pod[numberOfPods];
+
         mainPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mainPaint.setColor(mainSliderColor);
         mainPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
@@ -92,9 +107,7 @@ public class PodSlider extends View {
         podPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
         podPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        for (int i = 0; i < numberOfPods; i++) {
-            pods[i] = new Pod(mainSliderColor, podColor, selectedPodColor, this, i);
-        }
+        setNumberOfPods(numberOfPods);
         setCurrentlySelectedPod(0);
     }
 
@@ -137,7 +150,9 @@ public class PodSlider extends View {
                 setCurrentlySelectedPod(i);
                 // propagate click.
                 if (mPodClickListener != null)
-                    this.mPodClickListener.onPodClick(pods[i]);
+                    this.mPodClickListener.onPodClick(i);
+                if (mViewPager != null)
+                    mViewPager.setCurrentItem(i);
                 return;
             }
         }
@@ -193,6 +208,24 @@ public class PodSlider extends View {
         }
     }
 
+    public void setUpWithViewPager(ViewPager pager) {
+        mViewPager = pager;
+        final PagerAdapter adapter = pager.getAdapter();
+        if (adapter == null) {
+            throw new IllegalArgumentException("ViewPager does not have a PagerAdapter set");
+        }
+        setNumberOfPods(adapter.getCount());
+        setCurrentlySelectedPod(currentlySelectedPod);
+        pager.addOnPageChangeListener(new PodSliderOnPageChangeListener(this));
+        if (adapter.getCount() > 0) {
+            final int curItem = pager.getCurrentItem();
+            if (currentlySelectedPod != curItem) {
+                setCurrentlySelectedPod(curItem);
+            }
+        }
+    }
+
+
     public static final int LARGE_CIRCLE_MOVE_TIME_IN_MS = 100;
     public static final int TIME_FOR_EACH_INCREMENT_IN_MS = 18;
 
@@ -235,15 +268,14 @@ public class PodSlider extends View {
         }
         // else you start calculation.
         float startX = rectangleLeft + (rectangleBottom - rectangleTop) / 2;
+        float gapBetweenPodCenters = calculateGapBetweenPodCenters(rectangleLeft, rectangleRight,
+                rectangleTop, rectangleBottom);
         if (firstDraw) {
             firstDraw = false;
-            if (pods[0].isSelected())
-                largeAndSmallCircleCurrentCenterX = startX;
+            largeAndSmallCircleCurrentCenterX = startX + currentlySelectedPod * gapBetweenPodCenters;
         }
         canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
         canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, mediumCircleRadius, podPaint);
-        float gapBetweenPodCenters = calculateGapBetweenPodCenters(rectangleLeft, rectangleRight,
-                rectangleTop, rectangleBottom);
         for (int i = 0, n = numberOfPods; i < n; i++) {
             float podCenterX = startX + i * gapBetweenPodCenters;
             Pod pod = pods[i];
@@ -315,5 +347,70 @@ public class PodSlider extends View {
         canvas.drawCircle(left + radius, top + radius, radius, mainPaint);
         canvas.drawCircle(right - radius, top + radius, radius, mainPaint);
         canvas.drawRect(left + radius, top, right - radius, bottom, mainPaint);
+    }
+
+    public static class PodSliderOnPageChangeListener implements ViewPager.OnPageChangeListener {
+        private final WeakReference<PodSlider> mPodSliderRef;
+//        private int mScrollState;
+//        private int mPendingSelection = -1;
+
+        public PodSliderOnPageChangeListener(PodSlider podSlider) {
+            mPodSliderRef = new WeakReference<>(podSlider);
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+//            mScrollState = state;
+        }
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//            final PodSlider podSlider = mPodSliderRef.get();
+//            if (podSlider == null) {
+//                return;
+//            }
+            /*float currentX = podSlider.largeAndSmallCircleCurrentCenterX;
+            float differenceX;
+            if (position == podSlider.currentlySelectedPod) {
+                differenceX = podSlider.pods[position + 1].getCenterX() - currentX;
+                podSlider.largeAndSmallCircleCurrentCenterX += differenceX * positionOffset;
+            } else {
+                differenceX = podSlider.pods[position - 1].getCenterX() - currentX;
+                podSlider.largeAndSmallCircleCurrentCenterX -= differenceX * positionOffset;
+            }
+            podSlider.invalidate();*/
+
+            /*if (mPendingSelection == -1 ||
+                    podSlider.pods[podSlider.currentlySelectedPod].getCenterX() !=
+                            podSlider.pods[mPendingSelection].getCenterX()) {
+                float currentX = podSlider.largeAndSmallCircleCurrentCenterX;
+                float differenceX;
+                if (positionOffset > 0 || mPendingSelection == -1)
+                    differenceX = podSlider.pods[position + 1].getCenterX() - currentX;
+                else
+                    differenceX = podSlider.pods[mPendingSelection].getCenterX() - currentX;
+                podSlider.largeAndSmallCircleCurrentCenterX += differenceX * positionOffset;
+                podSlider.invalidate();
+            }
+            if (mScrollState == ViewPager.SCROLL_STATE_IDLE) {
+                if (mPendingSelection != -1) {
+                    podSlider.currentlySelectedPod = mPendingSelection;
+                    podSlider.pods[mPendingSelection].animatePod();
+                    mPendingSelection = -1;
+                }
+            }*/
+            /*if (mPendingSelection != -1 && mScrollState == ViewPager.SCROLL_STATE_IDLE) {
+                podSlider.currentlySelectedPod = mPendingSelection;
+                podSlider.pods[mPendingSelection].animatePod();
+            }*/
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            PodSlider podSlider = mPodSliderRef.get();
+            if (podSlider != null) {
+                podSlider.setCurrentlySelectedPod(position);
+            }
+        }
     }
 }
