@@ -3,13 +3,15 @@
 ----
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7f7687dd718e43c9b3a06e8bdd055fe8)](https://www.codacy.com/app/bhargav521/PodSLider?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bhargavms/PodSLider&amp;utm_campaign=Badge_Grade)
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-PodSLider-green.svg?style=true)](https://android-arsenal.com/details/1/3836)
+[![Release](https://jitpack.io/v/bhargavms/PodSLider.svg)](https://jitpack.io/bhargavms/PodSLider)
 
 ## A slider view designed by Chris Gannon
 see [CodePen](http://codepen.io/chrisgannon/pen/mPoMxq)
 
 > This project is an attempt to port the svg pod slider created by Chris Gannon to android.
 
-Gradle:
+#### Gradle:
+
 Add it to your project build.gradle with:
 
 ```gradle
@@ -20,23 +22,24 @@ allprojects {
 }
 ```
 and to your module's build.gradle dependencies block add the dependency to the library:
+> P.S Check Jitpack badge at the top of the readme for the latest version name.
 
 ```gradle
 dependencies {
-    compile 'com.github.bhargavms:PodSLider:1.1.2'
+    compile 'com.github.bhargavms:PodSLider:X.X.X'
 }
 ```
 
 ## Usage
 #### Xml Attributes
-```
-app:mainSliderColor="@color/mainPodSlider" // the color of the main rounded rectangular bar.
-app:numberOfPods="2" // the number of small circles (i.e pods) in the slider.
-app:podColor="#4CAF50" // the color of the pod when its not selected.
-app:selectedPodColor="#fff" // the color of the pod when its selected.
+```xml
+app:mainSliderColor="@color/mainPodSlider" <!-- the color of the main rounded rectangular bar. -->
+app:numberOfPods="2" <!-- the number of small circles (i.e pods) in the slider.-->
+app:podColor="#4CAF50" <!-- the color of the pod when its not selected.-->
+app:selectedPodColor="#fff" <!-- the color of the pod when its selected.-->
 ```
 #### Setting a click listener
-```
+```java
 PodSlider podSlider = (PodSlider) findViewById(R.id.pod_slider);
 podSlider.setPodClickListener(new OnPodClickListener() {
     @Override
@@ -47,12 +50,12 @@ podSlider.setPodClickListener(new OnPodClickListener() {
 ```
 
 #### To set Currently selected Pod
-```
+```java
 podSlider.setCurrentlySelectedPod(1);
 ```
 
 #### To set up with a ViewPager
-```
+```java
 ViewPager pager = (ViewPager) findViewById(R.id.pager);
 PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
 PodPagerAdapter adapter = new PodPagerAdapter(getSupportFragmentManager());
@@ -61,7 +64,7 @@ pagerSlider.setUpWithViewPager(pager);
 ```
 
 #### To change the number of pods programatically
-```
+```java
 podSlider.setNumberOfPods(4);
 ```
 #### Sample:
