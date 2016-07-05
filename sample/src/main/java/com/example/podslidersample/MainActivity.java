@@ -1,5 +1,6 @@
 package com.example.podslidersample;
 
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -17,7 +18,7 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        PodSlider podSlider = (PodSlider) findViewById(R.id.pod_slider);
+        final PodSlider podSlider = (PodSlider) findViewById(R.id.pod_slider);
         podSlider.setPodClickListener(new OnPodClickListener() {
             @Override
             public void onPodClick(int position) {
@@ -25,6 +26,12 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
             }
         });
         podSlider.setCurrentlySelectedPod(1);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                podSlider.setNumberOfPods(10);
+            }
+        }, 5000);
 
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);

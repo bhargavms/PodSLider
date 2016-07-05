@@ -29,6 +29,7 @@ public class PodSlider extends View {
     private Handler mainHandler;
     private boolean firstDraw = true;
     private ViewPager mViewPager;
+    private boolean isViewMeasured = false;
 
     private float largeAndSmallCircleCurrentCenterX;
     private float largeAndSmallCircleDestCenterX;
@@ -74,6 +75,7 @@ public class PodSlider extends View {
 
     @Override
     public void setBackgroundColor(int color) {
+        mainSliderColor = color;
         this.mainPaint.setColor(color);
         invalidate();
     }
@@ -84,6 +86,10 @@ public class PodSlider extends View {
         for (int i = 0; i < numberOfPods; i++) {
             pods[i] = new Pod(mainSliderColor, podColor, selectedPodColor, this, i);
         }
+        if (!isViewMeasured) {
+            return;
+        }
+        requestLayout();
     }
 
     private int mainSliderColor;
@@ -322,9 +328,7 @@ public class PodSlider extends View {
             //Be whatever you want
             height = desiredHeight;
         }
-
-        int numberOfPods = this.numberOfPods;
-        int desiredWidth = height * numberOfPods;
+        int desiredWidth = getDesiredWidth(height);
 
         //Measure Width
         if (widthMode == MeasureSpec.EXACTLY) {
@@ -337,8 +341,12 @@ public class PodSlider extends View {
             //Be whatever you want
             width = desiredWidth;
         }
-
         setMeasuredDimension(width, height);
+        isViewMeasured = true;
+    }
+
+    private int getDesiredWidth(int height) {
+        return height * numberOfPods;
     }
 
     private void drawRoundedRect(Canvas canvas, float left, float top, float right, float bottom) {
