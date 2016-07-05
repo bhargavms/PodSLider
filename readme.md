@@ -5,6 +5,10 @@
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-PodSLider-green.svg?style=true)](https://android-arsenal.com/details/1/3836)
 [![Release](https://jitpack.io/v/bhargavms/PodSLider.svg)](https://jitpack.io/bhargavms/PodSLider)
 
+#### Sample:
+
+![Sample Gif](assets/gifs/ezgif.com-gif-maker.gif?raw=true)
+
 ## A slider view designed by Chris Gannon
 see [CodePen](http://codepen.io/chrisgannon/pen/mPoMxq)
 
@@ -67,9 +71,6 @@ pagerSlider.setUpWithViewPager(pager);
 ```java
 podSlider.setNumberOfPods(4);
 ```
-#### Sample:
-
-![Sample Gif](assets/gifs/ezgif.com-gif-maker.gif?raw=true)
 
 ### LICENSE: (Apache 2.0)
 ```
