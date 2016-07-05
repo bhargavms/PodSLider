@@ -23,7 +23,6 @@ public class Pod {
 
     private Paint podCirclePaint;
     private Paint selectedPodPaint;
-    private Paint mainSliderPaint;
     private Paint selectedPodTextPaint;
     private PodSlider parent;
 
@@ -50,6 +49,10 @@ public class Pod {
     public void setCenter(float cx, float cy) {
         this.cx = cx;
         this.cy = cy;
+    }
+
+    public int getPosition() {
+        return position;
     }
 
     public float getCenterX() {
@@ -80,7 +83,7 @@ public class Pod {
         selectedPodPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
         selectedPodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        mainSliderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint mainSliderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mainSliderPaint.setColor(mainSliderColor);
         mainSliderPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
         mainSliderPaint.setStyle(Paint.Style.FILL_AND_STROKE);

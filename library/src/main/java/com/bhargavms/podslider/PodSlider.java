@@ -20,6 +20,8 @@ import java.lang.ref.WeakReference;
  * A view that looks like this http://codepen.io/chrisgannon/pen/mPoMxq
  */
 public class PodSlider extends View {
+    public static final int LARGE_CIRCLE_MOVE_TIME_IN_MS = 100;
+    public static final int TIME_FOR_EACH_INCREMENT_IN_MS = 18;
     private int numberOfPods;
     private Paint mainPaint;
     private Paint podPaint;
@@ -30,6 +32,12 @@ public class PodSlider extends View {
     private boolean firstDraw = true;
     private ViewPager mViewPager;
     private boolean isViewMeasured = false;
+    private int mainSliderColor;
+    private int podColor;
+    private int selectedPodColor;
+
+    private float touchStartX;
+    private float touchStartY;
 
     private float largeAndSmallCircleCurrentCenterX;
     private float largeAndSmallCircleDestCenterX;
@@ -106,10 +114,6 @@ public class PodSlider extends View {
         });
     }
 
-    private int mainSliderColor;
-    private int podColor;
-    private int selectedPodColor;
-
     private void init(int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
         mainHandler = new Handler();
         this.mainSliderColor = mainSliderColor;
@@ -140,21 +144,18 @@ public class PodSlider extends View {
         update(pods[currentlySelectedPod].getCenterX());
     }
 
-    private float startX;
-    private float startY;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction() & MotionEvent.ACTION_MASK;
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                startX = event.getX();
-                startY = event.getY();
+                touchStartX = event.getX();
+                touchStartY = event.getY();
                 return true;
             case MotionEvent.ACTION_UP:
                 float endX = event.getX();
                 float endY = event.getY();
-                if (isAClick(startX, endX, startY, endY)) {
+                if (isAClick(touchStartX, endX, touchStartY, endY)) {
                     onClick(endX, endY);
                 }
                 return true;
@@ -245,17 +246,10 @@ public class PodSlider extends View {
         }
     }
 
-
-    public static final int LARGE_CIRCLE_MOVE_TIME_IN_MS = 100;
-    public static final int TIME_FOR_EACH_INCREMENT_IN_MS = 18;
-
     private boolean isAClick(float startX, float endX, float startY, float endY) {
         float differenceX = Math.abs(startX - endX);
         float differenceY = Math.abs(startY - endY);
-        if (differenceX > 5f || differenceY > 5f) {
-            return false;
-        }
-        return true;
+        return !(differenceX > 5f || differenceY > 5f);
     }
 
     @Override
