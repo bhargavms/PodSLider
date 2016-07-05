@@ -81,6 +81,9 @@ public class PodSlider extends View {
     }
 
     public void setNumberOfPods(int numberOfPods) {
+        if (numberOfPods == 0) {
+            numberOfPods = 1;
+        }
         this.numberOfPods = numberOfPods;
         pods = new Pod[numberOfPods];
         for (int i = 0; i < numberOfPods; i++) {
@@ -90,6 +93,16 @@ public class PodSlider extends View {
             return;
         }
         requestLayout();
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (currentlySelectedPod < PodSlider.this.numberOfPods) {
+                    setCurrentlySelectedPod(currentlySelectedPod);
+                } else {
+                    setCurrentlySelectedPod(0);
+                }
+            }
+        });
     }
 
     private int mainSliderColor;
