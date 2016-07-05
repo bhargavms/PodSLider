@@ -1,4 +1,4 @@
-package com.example.podslider;
+package com.bhargavms.podslider;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -13,6 +13,8 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.example.podslider.R;
 
 import java.lang.ref.WeakReference;
 

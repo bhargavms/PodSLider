@@ -1,4 +1,4 @@
-package com.example.podslider;
+package com.bhargavms.podslider;
 
 import org.junit.Test;
 

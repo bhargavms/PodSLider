@@ -9,8 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.podslider.OnPodClickListener;
-import com.example.podslider.PodSlider;
+import com.bhargavms.podslider.OnPodClickListener;
+import com.bhargavms.podslider.PodSlider;
 
 public class MainActivity extends AppCompatActivity implements OnPodClickListener {
 
