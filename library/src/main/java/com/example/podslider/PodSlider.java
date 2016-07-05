@@ -81,7 +81,8 @@ public class PodSlider extends View {
     }
 
     public void setNumberOfPods(int numberOfPods) {
-        if (numberOfPods == 0) {
+        // please don't provide invalid values :)
+        if (numberOfPods <= 0) {
             numberOfPods = 1;
         }
         this.numberOfPods = numberOfPods;
