@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.text.TextPaint;
 
@@ -20,6 +21,7 @@ class Pod {
     private static final float MAX_RADIUS_INCREMENT_FACTOR = 0.3f;
     private float radiusIncrementor = 0;
     private Handler handler;
+    private Drawable mDrawable;
 
     private Paint podCirclePaint;
     private Paint selectedPodPaint;
@@ -117,11 +119,17 @@ class Pod {
             canvas.drawCircle(cx, cy, podRadius + (podRadius * radiusIncrementor), selectedPodPaint);
             float textSize = (podRadius + MAX_RADIUS_INCREMENT_FACTOR) * 2;
             selectedPodTextPaint.setTextSize(textSize);
-            canvas.drawText(centerText,
-                    cx,
-                    // http://stackoverflow.com/questions/11120392/android-center-text-on-canvas
-                    cy - ((selectedPodTextPaint.descent() + selectedPodTextPaint.ascent()) / 2),
-                    selectedPodTextPaint);
+            if (mDrawable == null) {
+                canvas.drawText(centerText,
+                        cx,
+                        // http://stackoverflow.com/questions/11120392/android-center-text-on-canvas
+                        cy - ((selectedPodTextPaint.descent() + selectedPodTextPaint.ascent()) / 2),
+                        selectedPodTextPaint);
+            } else {
+                mDrawable.setBounds(
+
+                );
+            }
         }
     }
 
