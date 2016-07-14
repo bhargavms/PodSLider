@@ -110,6 +110,17 @@ public class PodSlider extends View {
         });
     }
 
+    public void setPodTexts(String[] texts) {
+        if (texts.length < pods.length) {
+            throw new IllegalStateException("The length of the texts array must be same " +
+                    "as the number of pods.");
+        }
+        for (int i = 0; i < pods.length; i++) {
+            pods[i].setCenterText(texts[i]);
+        }
+        invalidate();
+    }
+
     private void init(int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
         mainHandler = new Handler();
         this.mainSliderColor = mainSliderColor;

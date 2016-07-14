@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final PodSlider podSlider = (PodSlider) findViewById(R.id.pod_slider);
+        assert podSlider != null;
         podSlider.setPodClickListener(new OnPodClickListener() {
             @Override
             public void onPodClick(int position) {
@@ -33,10 +34,19 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
             }
         }, 5000);
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               podSlider.setPodTexts(new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"});
+            }
+        },10000);
+
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
         PodPagerAdapter adapter = new PodPagerAdapter(getSupportFragmentManager());
+        assert pager != null;
         pager.setAdapter(adapter);
+        assert pagerSlider != null;
         pagerSlider.setUpWithViewPager(pager);
     }
 

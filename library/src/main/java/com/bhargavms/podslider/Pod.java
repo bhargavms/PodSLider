@@ -7,7 +7,7 @@ import android.graphics.Typeface;
 import android.os.Handler;
 import android.text.TextPaint;
 
-public class Pod {
+class Pod {
     private int position = 0;
     private String centerText;
     private float podRadius = 0;
@@ -42,13 +42,28 @@ public class Pod {
         this.selectedPodColor = selectedPodColor;
         this.parent = parent;
         this.position = position;
-        this.centerText = String.valueOf(position);
+        this.centerText = String.valueOf(position + 1);
+        init();
+    }
+
+    public Pod(int mainSliderColor, int color,
+               int selectedPodColor, PodSlider parent, int position, String centerText) {
+        this.mainSliderColor = mainSliderColor;
+        this.podColor = color;
+        this.selectedPodColor = selectedPodColor;
+        this.parent = parent;
+        this.position = position;
+        this.centerText = centerText;
         init();
     }
 
     public void setCenter(float cx, float cy) {
         this.cx = cx;
         this.cy = cy;
+    }
+
+    public void setCenterText(String centerText) {
+        this.centerText = centerText;
     }
 
     public int getPosition() {
