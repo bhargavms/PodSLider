@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -20,6 +21,10 @@ import java.lang.ref.WeakReference;
  * A view that looks like this http://codepen.io/chrisgannon/pen/mPoMxq
  */
 public class PodSlider extends View {
+    public enum DrawableSize {
+        FIT_POD_CIRCLE, FIT_MEDIUM_CIRCLE, FIT_LARGE_CIRCLE
+    }
+
     public static final int LARGE_CIRCLE_MOVE_TIME_IN_MS = 100;
     public static final int TIME_FOR_EACH_INCREMENT_IN_MS = 18;
     private int numberOfPods;
@@ -38,6 +43,9 @@ public class PodSlider extends View {
 
     private float touchStartX;
     private float touchStartY;
+
+    float largeCircleRadius;
+    float mediumCircleRadius;
 
     private float largeAndSmallCircleCurrentCenterX;
     private float largeAndSmallCircleDestCenterX;
@@ -120,6 +128,17 @@ public class PodSlider extends View {
         }
         invalidate();
     }
+
+    public void setPodDrawables(Drawable[] drawables, DrawableSize size) {
+        if (drawables.length < pods.length)
+            throw new IllegalStateException("The length of the drawables array must be same " +
+                    "as the number of pods.");
+        for (int i = 0; i < pods.length; i++) {
+            pods[i].setCenterDrawable(drawables[i], size);
+        }
+        invalidate();
+    }
+
 
     private void init(int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
         mainHandler = new Handler();
@@ -264,9 +283,9 @@ public class PodSlider extends View {
         super.onDraw(canvas);
         canvas.getClipBounds(clipBounds);
         // make large circle diameter equal to the height of the canvas.
-        float largeCircleRadius = Math.min((getHeight() - getPaddingTop() - getPaddingBottom()) / 2,
+        largeCircleRadius = Math.min((getHeight() - getPaddingTop() - getPaddingBottom()) / 2,
                 (getWidth() - getPaddingRight() - getPaddingLeft()) / 2);
-        float mediumCircleRadius = largeCircleRadius / 1.5f;
+        mediumCircleRadius = largeCircleRadius / 1.5f;
         float podRadius = largeCircleRadius * 2 / 7;
         float rectangleRight = clipBounds.right - getPaddingRight() - (largeCircleRadius / 5);
         float rectangleLeft = clipBounds.left + getPaddingLeft() + (largeCircleRadius / 5);

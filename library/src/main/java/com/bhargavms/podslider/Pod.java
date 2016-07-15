@@ -28,6 +28,8 @@ class Pod {
     private Paint selectedPodTextPaint;
     private PodSlider parent;
 
+    private PodSlider.DrawableSize mDrawableSize;
+
     public Pod(float radius, int color, int mainSliderColor, int selectedPodColor, PodSlider parent) {
         this.mainSliderColor = mainSliderColor;
         this.podRadius = radius;
@@ -66,6 +68,11 @@ class Pod {
 
     public void setCenterText(String centerText) {
         this.centerText = centerText;
+    }
+
+    public void setCenterDrawable(Drawable drawable, PodSlider.DrawableSize size) {
+        this.mDrawable = drawable;
+        mDrawableSize = size;
     }
 
     public int getPosition() {
@@ -126,11 +133,34 @@ class Pod {
                         cy - ((selectedPodTextPaint.descent() + selectedPodTextPaint.ascent()) / 2),
                         selectedPodTextPaint);
             } else {
+                float diameter;
+                switch (mDrawableSize) {
+                    case FIT_LARGE_CIRCLE:
+                        diameter = parent.largeCircleRadius * 2;
+                        break;
+                    case FIT_MEDIUM_CIRCLE:
+                        diameter = parent.mediumCircleRadius * 2;
+                        break;
+                    case FIT_POD_CIRCLE:
+                        diameter = (podRadius + MAX_RADIUS_INCREMENT_FACTOR) * 2;
+                        break;
+                    default:
+                        diameter = (podRadius + MAX_RADIUS_INCREMENT_FACTOR) * 2;
+                }
+                float squareSideLengthBy2 = (getSquareSideLength(diameter) / 2);
                 mDrawable.setBounds(
-
+                        (int) (cx - squareSideLengthBy2),
+                        (int) (cy - squareSideLengthBy2),
+                        (int) (cx + squareSideLengthBy2),
+                        (int) (cy + squareSideLengthBy2)
                 );
+                mDrawable.draw(canvas);
             }
         }
+    }
+
+    private float getSquareSideLength(float radius) {
+        return (float) Math.sqrt(Math.pow(radius, 2) / 2);
     }
 
     public boolean doesCoOrdinatesLieInSelectRange(float x, float y) {

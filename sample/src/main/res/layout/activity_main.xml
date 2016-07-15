@@ -30,8 +30,9 @@
     <com.bhargavms.podslider.PodSlider
         android:id="@+id/pager_slider"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="78dp"
         app:mainSliderColor="@color/mainPodSlider"
         app:podColor="#4CAF50"
+        android:layout_gravity="center_horizontal"
         app:selectedPodColor="#fff" />
 </LinearLayout>

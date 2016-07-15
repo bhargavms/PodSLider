@@ -1,5 +1,7 @@
 package com.example.podslidersample;
 
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,6 +20,9 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final Drawable access = getResources().getDrawable(R.drawable.ic_accessibility_black_24dp);
+        final Drawable account = getResources().getDrawable(R.drawable.ic_account_circle_black_24dp);
+        final Drawable car = getResources().getDrawable(R.drawable.ic_directions_car_black_24dp);
         final PodSlider podSlider = (PodSlider) findViewById(R.id.pod_slider);
         assert podSlider != null;
         podSlider.setPodClickListener(new OnPodClickListener() {
@@ -37,9 +42,24 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-               podSlider.setPodTexts(new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"});
+                podSlider.setPodTexts(new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"});
             }
-        },10000);
+        }, 10000);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int accentColor = getResources().getColor(R.color.colorAccent);
+                podSlider.setPodDrawables(
+                        new Drawable[]{
+                                access, account, car,
+                                access, account, car,
+                                access, account, car,
+                                access
+                        }, PodSlider.DrawableSize.FIT_LARGE_CIRCLE
+                );
+            }
+        }, 15000);
 
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
@@ -48,6 +68,11 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
         pager.setAdapter(adapter);
         assert pagerSlider != null;
         pagerSlider.setUpWithViewPager(pager);
+//        int accentColor = getResources().getColor(R.color.colorAccent);
+        Drawable[] drawables = new Drawable[]{
+                access, account, car
+        };
+        pagerSlider.setPodDrawables(drawables, PodSlider.DrawableSize.FIT_MEDIUM_CIRCLE);
     }
 
     @Override
