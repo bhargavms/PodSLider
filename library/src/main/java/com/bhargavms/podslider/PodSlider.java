@@ -47,8 +47,13 @@ public class PodSlider extends View {
     float largeCircleRadius;
     float mediumCircleRadius;
 
-    private float largeAndSmallCircleCurrentCenterX;
-    private float largeAndSmallCircleDestCenterX;
+    private float largeCircleCurrentCenterX;
+    private float largeCircleDestCenterX;
+
+    private float mediumCircleCurrentCenterX;
+    private float mediumCircleDestCenterX;
+
+    private float podRadius;
 
     private Rect clipBounds;
 
@@ -205,15 +210,12 @@ public class PodSlider extends View {
         }
     }
 
-    private void update(float toX) {
-        largeAndSmallCircleDestCenterX = toX;
-        // animate the pod
-        pods[currentlySelectedPod].animatePod();
-        // animate the outer circles
-        if (largeAndSmallCircleCurrentCenterX == largeAndSmallCircleDestCenterX) {
+    private void moveMediumCircle(float toX) {
+        mediumCircleDestCenterX = toX;
+        if (mediumCircleCurrentCenterX == mediumCircleDestCenterX) {
             return;
         }
-        if (largeAndSmallCircleCurrentCenterX > largeAndSmallCircleDestCenterX) {
+        if (mediumCircleCurrentCenterX > mediumCircleDestCenterX) {
             // current greater
             mainHandler.post(new Runnable() {
                 @Override
@@ -221,13 +223,13 @@ public class PodSlider extends View {
                     mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (largeAndSmallCircleCurrentCenterX <= largeAndSmallCircleDestCenterX) {
+                            if (mediumCircleCurrentCenterX <= mediumCircleDestCenterX) {
                                 mainHandler.removeCallbacks(this);
                             } else {
-                                float v = (largeAndSmallCircleCurrentCenterX -
-                                        largeAndSmallCircleDestCenterX) /
+                                float v = (mediumCircleCurrentCenterX -
+                                        mediumCircleDestCenterX) /
                                         LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                                largeAndSmallCircleCurrentCenterX -= v * TIME_FOR_EACH_INCREMENT_IN_MS;
+                                mediumCircleCurrentCenterX -= v * TIME_FOR_EACH_INCREMENT_IN_MS;
                                 invalidate();
                                 mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
                             }
@@ -240,18 +242,81 @@ public class PodSlider extends View {
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (largeAndSmallCircleCurrentCenterX >= largeAndSmallCircleDestCenterX) {
+                    if (mediumCircleCurrentCenterX >= mediumCircleDestCenterX) {
                         mainHandler.removeCallbacks(this);
                     } else {
-                        float v = (largeAndSmallCircleDestCenterX -
-                                largeAndSmallCircleCurrentCenterX) /
+                        float v = (mediumCircleDestCenterX -
+                                mediumCircleCurrentCenterX) /
                                 LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                        largeAndSmallCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
+                        mediumCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
                         invalidate();
                         mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
                     }
                 }
             });
+        }
+    }
+
+    private void moveLargeCircle(float toX) {
+        largeCircleDestCenterX = toX;
+        if (largeCircleCurrentCenterX == largeCircleDestCenterX) {
+            return;
+        }
+        if (largeCircleCurrentCenterX > largeCircleDestCenterX) {
+            // current greater
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (largeCircleCurrentCenterX <= largeCircleDestCenterX) {
+                                mainHandler.removeCallbacks(this);
+                            } else {
+                                float v = (largeCircleCurrentCenterX -
+                                        largeCircleDestCenterX) /
+                                        LARGE_CIRCLE_MOVE_TIME_IN_MS;
+                                largeCircleCurrentCenterX -= v * TIME_FOR_EACH_INCREMENT_IN_MS;
+                                invalidate();
+                                mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            // current is lesser
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (largeCircleCurrentCenterX >= largeCircleDestCenterX) {
+                        mainHandler.removeCallbacks(this);
+                    } else {
+                        float v = (largeCircleDestCenterX -
+                                largeCircleCurrentCenterX) /
+                                LARGE_CIRCLE_MOVE_TIME_IN_MS;
+                        largeCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
+                        invalidate();
+                        mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
+                    }
+                }
+            });
+        }
+    }
+
+    private void update(float toX) {
+        // animate the pod
+        pods[currentlySelectedPod].animatePod();
+        // animate the outer circles
+        moveLargeCircle(toX);
+        moveMediumCircle(toX);
+    }
+
+    private float makeSpringy(float x) {
+        if (mediumCircleCurrentCenterX < x) {
+            return x + podRadius;
+        } else {
+            return x - podRadius;
         }
     }
 
@@ -286,7 +351,7 @@ public class PodSlider extends View {
         largeCircleRadius = Math.min((getHeight() - getPaddingTop() - getPaddingBottom()) / 2,
                 (getWidth() - getPaddingRight() - getPaddingLeft()) / 2);
         mediumCircleRadius = largeCircleRadius / 1.5f;
-        float podRadius = largeCircleRadius * 2 / 7;
+        podRadius = largeCircleRadius * 2 / 7;
         float rectangleRight = clipBounds.right - getPaddingRight() - (largeCircleRadius / 5);
         float rectangleLeft = clipBounds.left + getPaddingLeft() + (largeCircleRadius / 5);
         float rectangleTop = getPaddingTop() + clipBounds.top + (largeCircleRadius / 5);
@@ -297,12 +362,13 @@ public class PodSlider extends View {
         if (numberOfPods == 1) {
             // draw one at the center and be done.
             float centerX = rectangleLeft + ((rectangleRight - rectangleLeft) / 2);
-            largeAndSmallCircleCurrentCenterX = centerX;
+            largeCircleCurrentCenterX = centerX;
+            mediumCircleCurrentCenterX = centerX;
             Pod pod = pods[0];
             pod.setCenter(centerX, podCenterY);
             pod.setPodRadius(podRadius);
-            canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
-            canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, mediumCircleRadius, mainPaint);
+            canvas.drawCircle(largeCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
+            canvas.drawCircle(mediumCircleCurrentCenterX, podCenterY, mediumCircleRadius, mainPaint);
             pod.drawPod(canvas);
             return;
         }
@@ -312,10 +378,11 @@ public class PodSlider extends View {
                 rectangleTop, rectangleBottom);
         if (firstDraw) {
             firstDraw = false;
-            largeAndSmallCircleCurrentCenterX = startX + currentlySelectedPod * gapBetweenPodCenters;
+            largeCircleCurrentCenterX = startX + currentlySelectedPod * gapBetweenPodCenters;
+            mediumCircleCurrentCenterX = startX + currentlySelectedPod * gapBetweenPodCenters;
         }
-        canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
-        canvas.drawCircle(largeAndSmallCircleCurrentCenterX, podCenterY, mediumCircleRadius, podPaint);
+        canvas.drawCircle(largeCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
+        canvas.drawCircle(mediumCircleCurrentCenterX, podCenterY, mediumCircleRadius, podPaint);
         for (int i = 0, n = numberOfPods; i < n; i++) {
             float podCenterX = startX + i * gapBetweenPodCenters;
             Pod pod = pods[i];

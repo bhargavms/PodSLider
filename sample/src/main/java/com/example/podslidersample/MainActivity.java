@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                int accentColor = getResources().getColor(R.color.colorAccent);
                 podSlider.setPodDrawables(
                         new Drawable[]{
                                 access, account, car,
