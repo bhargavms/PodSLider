@@ -1,7 +1,6 @@
 # PodSlider
 
 ----
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7f7687dd718e43c9b3a06e8bdd055fe8)](https://www.codacy.com/app/bhargav521/PodSLider?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bhargavms/PodSLider&amp;utm_campaign=Badge_Grade)
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-PodSLider-green.svg?style=true)](https://android-arsenal.com/details/1/3836)
 [![Release](https://jitpack.io/v/bhargavms/PodSLider.svg)](https://jitpack.io/bhargavms/PodSLider)
 
@@ -9,10 +8,24 @@
 
 ![Sample Gif](assets/gifs/ezgif.com-gif-maker.gif?raw=true)
 
-## A slider view designed by Chris Gannon
-see [CodePen](http://codepen.io/chrisgannon/pen/mPoMxq)
+## A slider view.
 
 > This project is an attempt to port the svg pod slider created by Chris Gannon to android.
+> see [CodePen](http://codepen.io/chrisgannon/pen/mPoMxq)
+
+#### version 1.1.6 Update:
+ - Added support for custom text via the `setPodTexts(String[] texts)` method. 
+ Use this after setting number of pods and make sure the length of texts 
+ array is equal to or greater than `numberOfPods` 
+ - By default the numbering in the pods start from 1.
+ - Added support for passing in drawables via the `setPodDrawables(Drawables[] drawables)` 
+ method. Use this after setting number of pods and make sure the length 
+ of drawables array is equal to or greater than `numberOfPods`
+ - Also you can specify 3 sizes for the drawables i.e 
+ `FIT_POD_CIRCLE`
+ `FIT_MEDIUM_CIRCLE`
+ `FIT_LARGE_CIRCLE`
+ - For code examples look below
 
 #### Gradle:
 
@@ -72,6 +85,42 @@ pagerSlider.setUpWithViewPager(pager);
 podSlider.setNumberOfPods(4);
 ```
 
+#### To set custom text 
+
+```
+// Use this after setting number of pods and make sure the length of texts 
+// array is equal to or greater than `numberOfPods` that you set using `setNumberOfPods()`
+podSlider.setPodTexts(new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"});
+```
+
+> (ideally use single character don't ever have texts with more than 1 char looks ugly)
+
+#### To set Drawables
+
+```
+Drawable access = getResources().getDrawable(R.drawable.ic_accessibility_black_24dp);
+Drawable account = getResources().getDrawable(R.drawable.ic_account_circle_black_24dp);
+Drawable car = getResources().getDrawable(R.drawable.ic_directions_car_black_24dp);
+// Use this after setting number of pods and make sure the length 
+// of drawables array is equal to or greater than `numberOfPods`
+// that you set using `setNumberOfPods()`
+podSlider.setPodDrawables(
+        new Drawable[]{
+                access, account, car,
+                access, account, car,
+                access, account, car,
+                access
+        }, PodSlider.DrawableSize.FIT_POD_CIRCLE
+);
+```
+
+> I have not added (and do not plan to in the near future) support for passing in 
+> drawable resource Ids, loading the drawable from resource/creating it from bitmaps
+> or whatever is left to you, if you want further customization on deciding the
+> size of the drawable please open an issue, based on the amount of traction it receives
+> I might decide to implement it.
+ 
+ 
 ### LICENSE: (Apache 2.0)
 ```
 Copyright [2016] [Bhargav M S]
