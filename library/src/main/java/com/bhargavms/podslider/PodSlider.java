@@ -210,106 +210,98 @@ public class PodSlider extends View {
         }
     }
 
-    private void moveMediumCircle(float toX) {
+    private boolean isLargeCircleAnimating;
+    private boolean isMediumCircleAnimating;
+
+    private void moveMediumCircle(float toX, final boolean pullback) {
         mediumCircleDestCenterX = toX;
-        if (mediumCircleCurrentCenterX == mediumCircleDestCenterX) {
+        if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
             return;
         }
-        if (mediumCircleCurrentCenterX > mediumCircleDestCenterX) {
-            // current greater
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mediumCircleCurrentCenterX <= mediumCircleDestCenterX) {
-                                mainHandler.removeCallbacks(this);
-                            } else {
-                                float v = (mediumCircleCurrentCenterX -
-                                        mediumCircleDestCenterX) /
-                                        LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                                mediumCircleCurrentCenterX -= v * TIME_FOR_EACH_INCREMENT_IN_MS;
-                                invalidate();
-                                mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
-                            }
-                        }
-                    });
-                }
-            });
-        } else {
-            // current is lesser
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mediumCircleCurrentCenterX >= mediumCircleDestCenterX) {
-                        mainHandler.removeCallbacks(this);
-                    } else {
-                        float v = (mediumCircleDestCenterX -
+        if (isMediumCircleAnimating)
+            return;
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
+                    mainHandler.removeCallbacks(this);
+                    isMediumCircleAnimating = false;
+//                    if (!pullback)
+//                        moveMediumCircle(largeAndMediumCircleDestX, true);
+                } else {
+                    float v;
+                    if (!pullback)
+                        v = (mediumCircleDestCenterX -
                                 mediumCircleCurrentCenterX) /
                                 LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                        mediumCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
-                        invalidate();
-                        mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
-                    }
+                    else
+                        v = (mediumCircleDestCenterX -
+                                mediumCircleCurrentCenterX) /
+                                50;
+                    mediumCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
+                    invalidate();
+                    mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
+                    isMediumCircleAnimating = true;
                 }
-            });
-        }
+            }
+        });
     }
 
-    private void moveLargeCircle(float toX) {
+    private boolean areTheyClose(int someValue, int otherValue) {
+        if (someValue == otherValue)
+            return true;
+        if (someValue == (otherValue + 1))
+            return true;
+        if (someValue == (otherValue - 1))
+            return true;
+        return false;
+    }
+
+
+    private void moveLargeCircle(float toX, final boolean pullback) {
         largeCircleDestCenterX = toX;
-        if (largeCircleCurrentCenterX == largeCircleDestCenterX) {
+        if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
             return;
         }
-        if (largeCircleCurrentCenterX > largeCircleDestCenterX) {
-            // current greater
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (largeCircleCurrentCenterX <= largeCircleDestCenterX) {
-                                mainHandler.removeCallbacks(this);
-                            } else {
-                                float v = (largeCircleCurrentCenterX -
-                                        largeCircleDestCenterX) /
-                                        LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                                largeCircleCurrentCenterX -= v * TIME_FOR_EACH_INCREMENT_IN_MS;
-                                invalidate();
-                                mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
-                            }
-                        }
-                    });
-                }
-            });
-        } else {
-            // current is lesser
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (largeCircleCurrentCenterX >= largeCircleDestCenterX) {
-                        mainHandler.removeCallbacks(this);
-                    } else {
-                        float v = (largeCircleDestCenterX -
-                                largeCircleCurrentCenterX) /
+        if (isLargeCircleAnimating)
+            return;
+
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
+                    mainHandler.removeCallbacks(this);
+                    isLargeCircleAnimating = false;
+//                    if (!pullback)
+//                        moveLargeCircle(largeAndMediumCircleDestX, true);
+                } else {
+                    float v;
+                    if (!pullback)
+                        v = (largeCircleDestCenterX - largeCircleCurrentCenterX) /
                                 LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                        largeCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
-                        invalidate();
-                        mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
-                    }
+                    else
+                        v = (largeCircleDestCenterX - largeCircleCurrentCenterX) /
+                                50;
+                    largeCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
+                    invalidate();
+                    mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
+                    isLargeCircleAnimating = true;
                 }
-            });
-        }
+            }
+        });
     }
 
+    private float largeAndMediumCircleDestX;
+
     private void update(float toX) {
+        largeAndMediumCircleDestX = toX;
         // animate the pod
         pods[currentlySelectedPod].animatePod();
         // animate the outer circles
-        moveLargeCircle(toX);
-        moveMediumCircle(toX);
+        moveLargeCircle(toX, false);
+        moveMediumCircle(toX, false);
+//        moveLargeCircle(makeSpringy(toX), false);
+//        moveMediumCircle(makeSpringy(toX), false);
     }
 
     private float makeSpringy(float x) {

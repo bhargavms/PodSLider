@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
                                 access, account, car,
                                 access, account, car,
                                 access
-                        }, PodSlider.DrawableSize.FIT_LARGE_CIRCLE
+                        }, PodSlider.DrawableSize.FIT_POD_CIRCLE
                 );
             }
         }, 15000);
