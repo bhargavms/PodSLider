@@ -14,7 +14,7 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AnticipateOvershootInterpolator;
+import android.view.animation.Interpolator;
 
 import java.lang.ref.WeakReference;
 
@@ -29,7 +29,6 @@ public class PodSlider extends View {
     public static final int ANIMATION_DURATION = 600;
     private int numberOfPods;
     private Paint mainPaint;
-    private Paint podPaint;
     private Pod[] pods;
     private OnPodClickListener mPodClickListener;
     private int currentlySelectedPod = -1;
@@ -39,6 +38,10 @@ public class PodSlider extends View {
     private int mainSliderColor;
     private int podColor;
     private int selectedPodColor;
+    private int mediumCircleColor;
+    private int largeCircleColor;
+    private Paint mediumCirclePaint;
+    private Paint largeCirclePaint;
 
     private float touchStartX;
     private float touchStartY;
@@ -52,6 +55,8 @@ public class PodSlider extends View {
 
     private ValueAnimator largeCircleAnimator = null;
     private ValueAnimator mediumCircleAnimator = null;
+    private Interpolator largeCircleInterpolator = null;
+    private Interpolator mediumCircleInterpolator = null;
 
     @SuppressWarnings("FieldCanBeLocal")
     private float podRadius;
@@ -104,6 +109,8 @@ public class PodSlider extends View {
             int numberOfPods = a.getInt(R.styleable.PodSlider_numberOfPods, 1);
             int podColor = a.getColor(R.styleable.PodSlider_podColor, 0);
             int selectedPodColor = a.getColor(R.styleable.PodSlider_selectedPodColor, Color.WHITE);
+            mediumCircleColor = a.getColor(R.styleable.PodSlider_mediumCircleColor, podColor);
+            largeCircleColor = a.getColor(R.styleable.PodSlider_largeCircleColor, mainSliderColor);
             init(numberOfPods, podColor, mainSliderColor, selectedPodColor);
         } finally {
             a.recycle();
@@ -155,7 +162,8 @@ public class PodSlider extends View {
         invalidate();
     }
 
-    private void init(final int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
+    private void init(final int numberOfPods, int podColor,
+                      int mainSliderColor, int selectedPodColor) {
         this.mainSliderColor = mainSliderColor;
         this.podColor = podColor;
         this.selectedPodColor = selectedPodColor;
@@ -166,18 +174,50 @@ public class PodSlider extends View {
         mainPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
         mainPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        podPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        podPaint.setColor(podColor);
-        podPaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
-        podPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mediumCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mediumCirclePaint.setColor(mediumCircleColor);
+        mediumCirclePaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
+        mediumCirclePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        largeCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        largeCirclePaint.setColor(largeCircleColor);
+        largeCirclePaint.setShadowLayer(5.5f, 6.0f, 6.0f, Color.BLACK);
+        largeCirclePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         setNumberOfPods(numberOfPods);
         currentlySelectedPod = 0;
+        largeCircleInterpolator = new EaseOutElasticInterpolator(1.0f, 1.9f);
+        mediumCircleInterpolator = new EaseOutElasticInterpolator(1.0f, 1.3f);
     }
 
+    /**
+     * Set the currently selected pod AND also animate the view.
+     *
+     * Please remember to use this only after
+     * the view has been rendered (i.e donot use this in onCreate()/onCreateView()
+     * this will cause the large and medium circle to be drawn at (0, height/2)
+     *
+     * @param currentlySelectedPod the position of pod you want to be selected.
+     */
     public void setCurrentlySelectedPodAndAnimate(int currentlySelectedPod) {
         setCurrentlySelectedPod(currentlySelectedPod);
         update(pods[currentlySelectedPod].getCenterX());
+    }
+
+    /**
+     * @param interpolator a custom interpolator to interpolate time for large circle animation
+     */
+    @SuppressWarnings("unused")
+    public void setLargeCircleInterpolator(Interpolator interpolator) {
+        largeCircleInterpolator = interpolator;
+    }
+
+    /**
+     * @param interpolator a custom interpolator to interpolate time for medium circle animation.
+     */
+    @SuppressWarnings("unused")
+    public void setMediumCircleInterpolator(Interpolator interpolator) {
+        this.mediumCircleInterpolator = interpolator;
     }
 
     public void setCurrentlySelectedPod(int currentlySelectedPod) {
@@ -228,7 +268,7 @@ public class PodSlider extends View {
             mediumCircleAnimator.cancel();
         mediumCircleAnimator = ValueAnimator.ofFloat(mediumCircleCurrentCenterX, toX);
         mediumCircleAnimator.setDuration(ANIMATION_DURATION);
-        mediumCircleAnimator.setInterpolator(new AnticipateOvershootInterpolator());
+        mediumCircleAnimator.setInterpolator(mediumCircleInterpolator);
         mediumCircleAnimator.addUpdateListener(mediumCircleAnimatorListener);
         mediumCircleAnimator.start();
     }
@@ -238,6 +278,7 @@ public class PodSlider extends View {
             largeCircleAnimator.cancel();
         largeCircleAnimator = ValueAnimator.ofFloat(largeCircleCurrentCenterX, toX);
         largeCircleAnimator.setDuration(ANIMATION_DURATION);
+        largeCircleAnimator.setInterpolator(largeCircleInterpolator);
         largeCircleAnimator.addUpdateListener(largeCircleAnimatorListener);
         largeCircleAnimator.start();
     }
@@ -312,8 +353,8 @@ public class PodSlider extends View {
             Pod pod = pods[0];
             pod.setCenter(centerX, podCenterY);
             pod.setPodRadius(podRadius);
-            canvas.drawCircle(largeCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
-            canvas.drawCircle(mediumCircleCurrentCenterX, podCenterY, mediumCircleRadius, mainPaint);
+            canvas.drawCircle(largeCircleCurrentCenterX, podCenterY, largeCircleRadius, largeCirclePaint);
+            canvas.drawCircle(mediumCircleCurrentCenterX, podCenterY, mediumCircleRadius, mediumCirclePaint);
             pod.drawPod(canvas);
             return;
         }
@@ -326,8 +367,8 @@ public class PodSlider extends View {
             largeCircleCurrentCenterX = startX + currentlySelectedPod * gapBetweenPodCenters;
             mediumCircleCurrentCenterX = startX + currentlySelectedPod * gapBetweenPodCenters;
         }
-        canvas.drawCircle(largeCircleCurrentCenterX, podCenterY, largeCircleRadius, mainPaint);
-        canvas.drawCircle(mediumCircleCurrentCenterX, podCenterY, mediumCircleRadius, podPaint);
+        canvas.drawCircle(largeCircleCurrentCenterX, podCenterY, largeCircleRadius, largeCirclePaint);
+        canvas.drawCircle(mediumCircleCurrentCenterX, podCenterY, mediumCircleRadius, mediumCirclePaint);
         for (int i = 0, n = numberOfPods; i < n; i++) {
             float podCenterX = startX + i * gapBetweenPodCenters;
             Pod pod = pods[i];

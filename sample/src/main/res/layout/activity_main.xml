@@ -15,6 +15,7 @@
         app:mainSliderColor="@color/mainPodSlider"
         app:numberOfPods="2"
         app:podColor="#4CAF50"
+        app:mediumCircleColor="#388E3C"
         app:selectedPodColor="#fff" />
 
     <android.support.v4.view.ViewPager
@@ -32,6 +33,7 @@
         android:layout_height="78dp"
         app:mainSliderColor="@color/mainPodSlider"
         app:podColor="#4CAF50"
+        app:mediumCircleColor="#388E3C"
         android:layout_gravity="center_horizontal"
         app:selectedPodColor="#fff" />
 </LinearLayout>
