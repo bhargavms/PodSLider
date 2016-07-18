@@ -1,5 +1,6 @@
 package com.bhargavms.podslider;
 
+import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,12 +9,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnticipateOvershootInterpolator;
 
 import java.lang.ref.WeakReference;
 
@@ -25,15 +26,13 @@ public class PodSlider extends View {
         FIT_POD_CIRCLE, FIT_MEDIUM_CIRCLE, FIT_LARGE_CIRCLE
     }
 
-    public static final int LARGE_CIRCLE_MOVE_TIME_IN_MS = 100;
-    public static final int TIME_FOR_EACH_INCREMENT_IN_MS = 18;
+    public static final int ANIMATION_DURATION = 600;
     private int numberOfPods;
     private Paint mainPaint;
     private Paint podPaint;
     private Pod[] pods;
     private OnPodClickListener mPodClickListener;
-    private int currentlySelectedPod = 0;
-    private Handler mainHandler;
+    private int currentlySelectedPod = -1;
     private boolean firstDraw = true;
     private ViewPager mViewPager;
     private boolean isViewMeasured = false;
@@ -48,12 +47,29 @@ public class PodSlider extends View {
     float mediumCircleRadius;
 
     private float largeCircleCurrentCenterX;
-    private float largeCircleDestCenterX;
 
     private float mediumCircleCurrentCenterX;
-    private float mediumCircleDestCenterX;
 
+    private ValueAnimator largeCircleAnimator = null;
+    private ValueAnimator mediumCircleAnimator = null;
+
+    @SuppressWarnings("FieldCanBeLocal")
     private float podRadius;
+
+    private ValueAnimator.AnimatorUpdateListener largeCircleAnimatorListener =
+            new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    updateLargeCircleCenterX(animation);
+                }
+            };
+    private ValueAnimator.AnimatorUpdateListener mediumCircleAnimatorListener =
+            new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    updateMediumCircleCenterX(animation);
+                }
+            };
 
     private Rect clipBounds;
 
@@ -111,16 +127,6 @@ public class PodSlider extends View {
             return;
         }
         requestLayout();
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (currentlySelectedPod < PodSlider.this.numberOfPods) {
-                    setCurrentlySelectedPod(currentlySelectedPod);
-                } else {
-                    setCurrentlySelectedPod(0);
-                }
-            }
-        });
     }
 
     public void setPodTexts(String[] texts) {
@@ -144,9 +150,7 @@ public class PodSlider extends View {
         invalidate();
     }
 
-
-    private void init(int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
-        mainHandler = new Handler();
+    private void init(final int numberOfPods, int podColor, int mainSliderColor, int selectedPodColor) {
         this.mainSliderColor = mainSliderColor;
         this.podColor = podColor;
         this.selectedPodColor = selectedPodColor;
@@ -163,7 +167,12 @@ public class PodSlider extends View {
         podPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         setNumberOfPods(numberOfPods);
-        setCurrentlySelectedPod(0);
+        currentlySelectedPod = 0;
+    }
+
+    public void setCurrentlySelectedPodAndAnimate(int currentlySelectedPod) {
+        setCurrentlySelectedPod(currentlySelectedPod);
+        update(pods[currentlySelectedPod].getCenterX());
     }
 
     public void setCurrentlySelectedPod(int currentlySelectedPod) {
@@ -172,7 +181,6 @@ public class PodSlider extends View {
             pods[i].setSelected(false);
         }
         pods[currentlySelectedPod].setSelected(true);
-        update(pods[currentlySelectedPod].getCenterX());
     }
 
     @Override
@@ -199,7 +207,7 @@ public class PodSlider extends View {
         for (int i = 0; i < pods.length; i++) {
             Pod pod = pods[i];
             if (pod.doesCoOrdinatesLieInSelectRange(x, y)) {
-                setCurrentlySelectedPod(i);
+                setCurrentlySelectedPodAndAnimate(i);
                 // propagate click.
                 if (mPodClickListener != null)
                     this.mPodClickListener.onPodClick(i);
@@ -210,106 +218,47 @@ public class PodSlider extends View {
         }
     }
 
-    private boolean isLargeCircleAnimating;
-    private boolean isMediumCircleAnimating;
-
-    private void moveMediumCircle(float toX, final boolean pullback) {
-        mediumCircleDestCenterX = toX;
-        if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
-            return;
-        }
-        if (isMediumCircleAnimating)
-            return;
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
-                    mainHandler.removeCallbacks(this);
-                    isMediumCircleAnimating = false;
-//                    if (!pullback)
-//                        moveMediumCircle(largeAndMediumCircleDestX, true);
-                } else {
-                    float v;
-                    if (!pullback)
-                        v = (mediumCircleDestCenterX -
-                                mediumCircleCurrentCenterX) /
-                                LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                    else
-                        v = (mediumCircleDestCenterX -
-                                mediumCircleCurrentCenterX) /
-                                50;
-                    mediumCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
-                    invalidate();
-                    mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
-                    isMediumCircleAnimating = true;
-                }
-            }
-        });
+    private void moveMediumCircle(float toX) {
+        if (mediumCircleAnimator != null && mediumCircleAnimator.isRunning())
+            mediumCircleAnimator.cancel();
+        mediumCircleAnimator = ValueAnimator.ofFloat(mediumCircleCurrentCenterX, toX);
+        mediumCircleAnimator.setDuration(ANIMATION_DURATION);
+        mediumCircleAnimator.setInterpolator(new AnticipateOvershootInterpolator());
+        mediumCircleAnimator.addUpdateListener(mediumCircleAnimatorListener);
+        mediumCircleAnimator.start();
     }
 
-    private boolean areTheyClose(int someValue, int otherValue) {
-        if (someValue == otherValue)
-            return true;
-        if (someValue == (otherValue + 1))
-            return true;
-        if (someValue == (otherValue - 1))
-            return true;
-        return false;
+    private void moveLargeCircle(float toX) {
+        if (largeCircleAnimator != null && largeCircleAnimator.isRunning())
+            largeCircleAnimator.cancel();
+        largeCircleAnimator = ValueAnimator.ofFloat(largeCircleCurrentCenterX, toX);
+        largeCircleAnimator.setDuration(ANIMATION_DURATION);
+        largeCircleAnimator.addUpdateListener(largeCircleAnimatorListener);
+        largeCircleAnimator.start();
     }
 
-
-    private void moveLargeCircle(float toX, final boolean pullback) {
-        largeCircleDestCenterX = toX;
-        if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
-            return;
-        }
-        if (isLargeCircleAnimating)
-            return;
-
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (areTheyClose((int) largeCircleCurrentCenterX, (int) largeCircleDestCenterX)) {
-                    mainHandler.removeCallbacks(this);
-                    isLargeCircleAnimating = false;
-//                    if (!pullback)
-//                        moveLargeCircle(largeAndMediumCircleDestX, true);
-                } else {
-                    float v;
-                    if (!pullback)
-                        v = (largeCircleDestCenterX - largeCircleCurrentCenterX) /
-                                LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                    else
-                        v = (largeCircleDestCenterX - largeCircleCurrentCenterX) /
-                                50;
-                    largeCircleCurrentCenterX += v * TIME_FOR_EACH_INCREMENT_IN_MS;
-                    invalidate();
-                    mainHandler.postDelayed(this, TIME_FOR_EACH_INCREMENT_IN_MS);
-                    isLargeCircleAnimating = true;
-                }
-            }
-        });
+    private void updateLargeCircleCenterX(ValueAnimator animator) {
+        largeCircleCurrentCenterX = (float) animator.getAnimatedValue();
+        invalidateOnlyRectIfPossible();
     }
 
-    private float largeAndMediumCircleDestX;
+    private void invalidateOnlyRectIfPossible() {
+        if (clipBounds != null && clipBounds.left != 0 &&
+                clipBounds.top != 0 && clipBounds.right != 0 && clipBounds.bottom != 0)
+            invalidate(clipBounds);
+        else
+            invalidate();
+    }
+
+    private void updateMediumCircleCenterX(ValueAnimator animator) {
+        mediumCircleCurrentCenterX = (float) animator.getAnimatedValue();
+        invalidateOnlyRectIfPossible();
+    }
 
     private void update(float toX) {
-        largeAndMediumCircleDestX = toX;
-        // animate the pod
         pods[currentlySelectedPod].animatePod();
-        // animate the outer circles
-        moveLargeCircle(toX, false);
-        moveMediumCircle(toX, false);
-//        moveLargeCircle(makeSpringy(toX), false);
-//        moveMediumCircle(makeSpringy(toX), false);
-    }
-
-    private float makeSpringy(float x) {
-        if (mediumCircleCurrentCenterX < x) {
-            return x + podRadius;
-        } else {
-            return x - podRadius;
-        }
+        moveLargeCircle(toX);
+        moveMediumCircle(toX);
     }
 
     public void setUpWithViewPager(ViewPager pager) {
@@ -319,12 +268,11 @@ public class PodSlider extends View {
             throw new IllegalArgumentException("ViewPager does not have a PagerAdapter set");
         }
         setNumberOfPods(adapter.getCount());
-        setCurrentlySelectedPod(currentlySelectedPod);
         pager.addOnPageChangeListener(new PodSliderOnPageChangeListener(this));
         if (adapter.getCount() > 0) {
             final int curItem = pager.getCurrentItem();
             if (currentlySelectedPod != curItem) {
-                setCurrentlySelectedPod(curItem);
+                currentlySelectedPod = curItem;
             }
         }
     }
@@ -509,7 +457,7 @@ public class PodSlider extends View {
         public void onPageSelected(int position) {
             PodSlider podSlider = mPodSliderRef.get();
             if (podSlider != null) {
-                podSlider.setCurrentlySelectedPod(position);
+                podSlider.setCurrentlySelectedPodAndAnimate(position);
             }
         }
     }
