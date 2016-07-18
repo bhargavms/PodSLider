@@ -123,6 +123,11 @@ public class PodSlider extends View {
         for (int i = 0; i < numberOfPods; i++) {
             pods[i] = new Pod(mainSliderColor, podColor, selectedPodColor, this, i);
         }
+        if (currentlySelectedPod != -1 && currentlySelectedPod < PodSlider.this.numberOfPods) {
+            setCurrentlySelectedPod(currentlySelectedPod);
+        } else {
+            setCurrentlySelectedPod(0);
+        }
         if (!isViewMeasured) {
             return;
         }

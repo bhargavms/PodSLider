@@ -22,7 +22,7 @@ class Pod {
     private float cy = 0;
     private boolean selected = false;
     private static final float MAX_RADIUS_INCREMENT_FACTOR = 0.3f;
-    private float radiusIncrementor = 0;
+    private float radiusIncrementor = MAX_RADIUS_INCREMENT_FACTOR;
     private Handler handler;
     private Drawable mDrawable;
 
