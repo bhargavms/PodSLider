@@ -58,6 +58,8 @@ public class PodSlider extends View {
     private Interpolator largeCircleInterpolator = null;
     private Interpolator mediumCircleInterpolator = null;
 
+    private boolean usePageTitle = true;
+
     @SuppressWarnings("FieldCanBeLocal")
     private float podRadius;
 
@@ -192,7 +194,7 @@ public class PodSlider extends View {
 
     /**
      * Set the currently selected pod AND also animate the view.
-     *
+     * <p/>
      * Please remember to use this only after
      * the view has been rendered (i.e donot use this in onCreate()/onCreateView()
      * this will cause the large and medium circle to be drawn at (0, height/2)
@@ -307,6 +309,10 @@ public class PodSlider extends View {
         moveMediumCircle(toX);
     }
 
+    public void usePageTitles(boolean usePageTitle) {
+        this.usePageTitle = usePageTitle;
+    }
+
     public void setUpWithViewPager(ViewPager pager) {
         mViewPager = pager;
         final PagerAdapter adapter = pager.getAdapter();
@@ -314,6 +320,14 @@ public class PodSlider extends View {
             throw new IllegalArgumentException("ViewPager does not have a PagerAdapter set");
         }
         setNumberOfPods(adapter.getCount());
+        if (usePageTitle) {
+            for (int i = 0; i < pods.length; i++) {
+                String pageTitle = adapter.getPageTitle(i) != null ?
+                        adapter.getPageTitle(i).toString() : null;
+                if (pageTitle != null)
+                    pods[i].setCenterText(pageTitle);
+            }
+        }
         pager.addOnPageChangeListener(new PodSliderOnPageChangeListener(this));
         if (adapter.getCount() > 0) {
             final int curItem = pager.getCurrentItem();
@@ -322,6 +336,18 @@ public class PodSlider extends View {
             }
         }
     }
+//
+//    public Pod getPod(int position) {
+//        if (pods == null) {
+//            throw new IllegalStateException("You need to init the pods first by calling " +
+//                    "setNumberOfPods() or setUpWithViewPager");
+//        }
+//        if (position >= pods.length || position <= 0) {
+//            throw new IndexOutOfBoundsException("Number of pods is " + pods.length
+//                    + " passed position is " + position);
+//        }
+//        return pods[position];
+//    }
 
     private boolean isAClick(float startX, float endX, float startY, float endY) {
         float differenceX = Math.abs(startX - endX);
