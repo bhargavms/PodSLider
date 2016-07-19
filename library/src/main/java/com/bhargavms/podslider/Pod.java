@@ -1,5 +1,6 @@
 package com.bhargavms.podslider;
 
+import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -7,6 +8,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.text.TextPaint;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 class Pod {
     private int position = 0;
@@ -19,7 +22,7 @@ class Pod {
     private float cy = 0;
     private boolean selected = false;
     private static final float MAX_RADIUS_INCREMENT_FACTOR = 0.3f;
-    private float radiusIncrementor = 0;
+    private float radiusIncrementor = MAX_RADIUS_INCREMENT_FACTOR;
     private Handler handler;
     private Drawable mDrawable;
 
@@ -176,19 +179,35 @@ class Pod {
         if (!selected)
             return;
         radiusIncrementor = 0;
-        handler.post(new Runnable() {
+//        handler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (radiusIncrementor >= MAX_RADIUS_INCREMENT_FACTOR) {
+//                    handler.removeCallbacks(this);
+//                } else {
+//                    float v = (MAX_RADIUS_INCREMENT_FACTOR - radiusIncrementor) /
+//                            PodSlider.LARGE_CIRCLE_MOVE_TIME_IN_MS;
+//                    radiusIncrementor += v * PodSlider.TIME_FOR_EACH_INCREMENT_IN_MS;
+//                    handler.postDelayed(this, PodSlider.TIME_FOR_EACH_INCREMENT_IN_MS);
+//                    parent.invalidate();
+//                }
+//            }
+//        });
+
+        ValueAnimator animator = ValueAnimator.ofFloat(radiusIncrementor, MAX_RADIUS_INCREMENT_FACTOR);
+        animator.setDuration(PodSlider.ANIMATION_DURATION);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void run() {
-                if (radiusIncrementor >= MAX_RADIUS_INCREMENT_FACTOR) {
-                    handler.removeCallbacks(this);
-                } else {
-                    float v = (MAX_RADIUS_INCREMENT_FACTOR - radiusIncrementor) /
-                            PodSlider.LARGE_CIRCLE_MOVE_TIME_IN_MS;
-                    radiusIncrementor += v * PodSlider.TIME_FOR_EACH_INCREMENT_IN_MS;
-                    handler.postDelayed(this, PodSlider.TIME_FOR_EACH_INCREMENT_IN_MS);
-                    parent.invalidate();
-                }
+            public void onAnimationUpdate(ValueAnimator animation) {
+                radiusIncrementor = (float) animation.getAnimatedValue();
+                int left = (int) (cx - podRadius);
+                int right = (int) (cx + podRadius);
+                int top = (int) (cy - podRadius);
+                int bottom = (int) (cy + podRadius);
+                parent.invalidate(left, top, right, bottom);
             }
         });
+        animator.start();
     }
 }

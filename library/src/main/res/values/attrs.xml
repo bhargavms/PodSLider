@@ -4,6 +4,8 @@
         <attr name="mainSliderColor" format="color" />
         <attr name="numberOfPods" format="integer" />
         <attr name="podColor" format="color" />
+        <attr name="mediumCircleColor" format="color" />
+        <attr name="largeCircleColor" format="color" />
         <attr name="selectedPodColor" format="color" />
     </declare-styleable>
 </resources>

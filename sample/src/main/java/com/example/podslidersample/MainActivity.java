@@ -1,6 +1,5 @@
 package com.example.podslidersample;
 
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                podSlider.setNumberOfPods(10);
+                podSlider.setNumberOfPods(6);
             }
         }, 5000);
 
@@ -46,32 +45,32 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
             }
         }, 10000);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                podSlider.setPodDrawables(
-                        new Drawable[]{
-                                access, account, car,
-                                access, account, car,
-                                access, account, car,
-                                access
-                        }, PodSlider.DrawableSize.FIT_POD_CIRCLE
-                );
-            }
-        }, 15000);
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                podSlider.setPodDrawables(
+//                        new Drawable[]{
+//                                access, account, car,
+//                                access, account, car,
+//                                access, account, car,
+//                                access
+//                        }, PodSlider.DrawableSize.FIT_POD_CIRCLE
+//                );
+//            }
+//        }, 15000);
 
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
-        PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
-        PodPagerAdapter adapter = new PodPagerAdapter(getSupportFragmentManager());
-        assert pager != null;
-        pager.setAdapter(adapter);
-        assert pagerSlider != null;
-        pagerSlider.setUpWithViewPager(pager);
-//        int accentColor = getResources().getColor(R.color.colorAccent);
-        Drawable[] drawables = new Drawable[]{
-                access, account, car
-        };
-        pagerSlider.setPodDrawables(drawables, PodSlider.DrawableSize.FIT_MEDIUM_CIRCLE);
+//        ViewPager pager = (ViewPager) findViewById(R.id.pager);
+//        PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
+//        PodPagerAdapter adapter = new PodPagerAdapter(getSupportFragmentManager());
+//        assert pager != null;
+//        pager.setAdapter(adapter);
+//        assert pagerSlider != null;
+//        pagerSlider.setUpWithViewPager(pager);
+////        int accentColor = getResources().getColor(R.color.colorAccent);
+//        Drawable[] drawables = new Drawable[]{
+//                access, account, car
+//        };
+//        pagerSlider.setPodDrawables(drawables, PodSlider.DrawableSize.FIT_MEDIUM_CIRCLE);
     }
 
     @Override

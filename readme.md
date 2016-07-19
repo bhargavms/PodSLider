@@ -69,9 +69,18 @@ podSlider.setPodClickListener(new OnPodClickListener() {
 #### To set Currently selected Pod
 ```java
 podSlider.setCurrentlySelectedPod(1);
+// if you want to change selected pod and also animate
+// then use the below method, But please remember to use this only after
+// the view has been rendered (i.e donot use this in onCreate()/onCreateView()
+// this will cause the large and medium circle to be drawn at (0, height/2)
+podSlider.setcurrentlySelectedPodAndAnimate(1);
 ```
 
 #### To set up with a ViewPager
+> By default, the widget uses the String returned by the viewpager 
+> adapter's `getPageTitle(int)` method, to disable it just set
+> `pager.usePageTitle(false)` as false, **before setting up with viewPager** 
+
 ```java
 ViewPager pager = (ViewPager) findViewById(R.id.pager);
 PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);

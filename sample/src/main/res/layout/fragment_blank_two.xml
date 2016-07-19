@@ -2,23 +2,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F68C6F"
-    tools:context="com.example.podslidersample.BlankFragment">
+    android:background="#FFC169"
+    tools:context="com.example.podslidersample.BlankFragmentTwo">
 
     <ImageView
-        android:id="@+id/img_android"
+        android:id="@+id/img_sofa"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:src="@drawable/ic_android_black_24dp"
+        android:src="@drawable/ic_weekend_black_24dp"
         android:layout_centerInParent="true"
         tools:ignore="ContentDescription" />
 
     <ImageView
         android:layout_width="85dp"
         android:layout_height="85dp"
-        android:src="@drawable/ic_build_black_24dp"
-        android:layout_toLeftOf="@+id/img_android"
+        android:src="@drawable/ic_android_black_24dp"
         android:layout_centerInParent="true"
-        android:layout_marginRight="-45dp"/>
+        android:layout_above="@id/img_sofa"
+        android:layout_marginBottom="-90dp" />
 
 </RelativeLayout>
