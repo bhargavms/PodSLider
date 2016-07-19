@@ -7,7 +7,7 @@
 #### Sample:
 
 ![Sample Gif](assets/gifs/ezgif.com-gif-maker.gif?raw=true)
-![Sample Gif](assets/gifs/view_pager_interaction?raw=true)
+![Sample Gif](assets/gifs/view_pager_interaction.gif?raw=true)
 
 ## A slider view.
 
