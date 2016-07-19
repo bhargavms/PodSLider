@@ -77,6 +77,10 @@ podSlider.setcurrentlySelectedPodAndAnimate(1);
 ```
 
 #### To set up with a ViewPager
+> By default, the widget uses the String returned by the viewpager 
+> adapter's `getPageTitle(int)` method, to disable it just set
+> `pager.usePageTitle(false)` as false, **before setting up with viewPager** 
+
 ```java
 ViewPager pager = (ViewPager) findViewById(R.id.pager);
 PodSlider pagerSlider = (PodSlider) findViewById(R.id.pager_slider);
