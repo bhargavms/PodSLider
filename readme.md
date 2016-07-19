@@ -7,25 +7,16 @@
 #### Sample:
 
 ![Sample Gif](assets/gifs/ezgif.com-gif-maker.gif?raw=true)
+![Sample Gif](assets/gifs/view_pager_interaction?raw=true)
 
 ## A slider view.
 
 > This project is an attempt to port the svg pod slider created by Chris Gannon to android.
 > see [CodePen](http://codepen.io/chrisgannon/pen/mPoMxq)
 
-#### version 1.1.6 Update:
- - Added support for custom text via the `setPodTexts(String[] texts)` method. 
- Use this after setting number of pods and make sure the length of texts 
- array is equal to or greater than `numberOfPods` 
- - By default the numbering in the pods start from 1.
- - Added support for passing in drawables via the `setPodDrawables(Drawables[] drawables)` 
- method. Use this after setting number of pods and make sure the length 
- of drawables array is equal to or greater than `numberOfPods`
- - Also you can specify 3 sizes for the drawables i.e 
- `FIT_POD_CIRCLE`
- `FIT_MEDIUM_CIRCLE`
- `FIT_LARGE_CIRCLE`
- - For code examples look below
+#### version 1.2.0 Update:
+ - Major enhancements in how animations are done.
+ - Added a ease out elastic effect(a wobble effect just before the circles stop).
 
 #### Gradle:
 
