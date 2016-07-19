@@ -12,11 +12,11 @@
     <com.bhargavms.podslider.PodSlider
         android:id="@+id/pod_slider"
         android:layout_width="wrap_content"
-        android:layout_height="72dp"
+        android:layout_height="48dp"
         app:mainSliderColor="@color/mainPodSlider"
         app:numberOfPods="2"
         app:podColor="#4CAF50"
-        app:mediumCircleColor="#388E3C"
+        app:mediumCircleColor="#4CAF50"
         app:selectedPodColor="#fff"
         android:layout_marginTop="50dp"/>
 

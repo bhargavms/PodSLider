@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements OnPodClickListene
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                podSlider.setNumberOfPods(6);
+                podSlider.setNumberOfPods(8);
             }
         }, 5000);
 
